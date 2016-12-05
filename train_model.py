@@ -24,6 +24,7 @@ EVAL_FREQ_DEFAULT = 1000
 CHECKPOINT_FREQ_DEFAULT = 5000
 PRINT_FREQ_DEFAULT = 10
 OPTIMIZER_DEFAULT = 'ADAM'
+SAVE_STUFF_DEFAULT = False
 
 DATA_DIR_DEFAULT = './cifar10/cifar-10-batches-py'
 #LOG_DIR_DEFAULT = './logs/cifar10'
@@ -120,7 +121,8 @@ def train():
     
     # Merge all the summaries
     merged = tf.merge_all_summaries()
-    train_writer = tf.train.SummaryWriter(FLAGS.log_dir + '/train', sess.graph)
+    if FLAGS.save_stuff:
+        train_writer = tf.train.SummaryWriter(FLAGS.log_dir + '/train', sess.graph)
     test_writer = tf.train.SummaryWriter(FLAGS.log_dir + '/test')
     
     # Initialise all variables
@@ -147,17 +149,21 @@ def train():
           print ('\nEpoch', epoch, 
                  '\nTest accuracy:', acc, 
                  '\nTest loss    :', loss_val)
-          
+        
+        if epoch % FLAGS.checkpoint_freq
           # Save model checkpoint
           if epoch > 0:
-              save_path = saver.save(sess, 
-                         'checkpoints/conv_basic_epoch' + str(epoch) + '.ckpt')
+              save_path = saver.save(sess, FLAGS.checkpoint_dir + \
+                                     '/conv_basic_epoch'+ str(epoch) + '.ckpt')
               print("Model saved in file: %s" % save_path)
     
         # Do training update
-        summary, _ = sess.run([merged, train_op], 
-                              feed_dict=get_fd(cifar10, True))
-        train_writer.add_summary(summary, epoch)
+        if FLAGS.save_stuff:
+            summary, _ = sess.run([merged, train_op], 
+                                  feed_dict=get_fd(cifar10, True))
+            train_writer.add_summary(summary, epoch)
+        else:
+            sess.run([train_op], feed_dict=get_fd(cifar10, True))
     
     # Print the final accuracy
     summary, acc, loss_val = \
@@ -352,6 +358,8 @@ if __name__ == '__main__':
                       help='Training or feature extraction')
     parser.add_argument('--train_model', type = str, default = 'linear',
                       help='Type of model. Possible options: linear and siamese')
+    parser.add_argument('--save_stuff', type = bool, default = SAVE_STUFF_DEFAULT,
+                      help='Whether to save lots of logs')
 
     FLAGS, unparsed = parser.parse_known_args()
 
