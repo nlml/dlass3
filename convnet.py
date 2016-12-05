@@ -309,7 +309,7 @@ class ConvNet(object):
         # PUT YOUR CODE HERE  #
         ########################
         cross_entropy = tf.nn.softmax_cross_entropy_with_logits(
-                            logits, labels, name='crossentropy')  
+                            logits, labels, name='crossentropy')
         loss = tf.reduce_mean(cross_entropy, name='loss')
         tf.scalar_summary('crossentropyloss', loss)
         ########################

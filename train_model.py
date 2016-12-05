@@ -99,7 +99,7 @@ def train():
     num_classes = cifar10.test.labels.shape[1]
     
     x = tf.placeholder(tf.float32, shape=[None] + list(image_shape), name='x')
-    y = tf.placeholder(tf.int32, shape=(None, num_classes), name='y')
+    y = tf.placeholder(tf.float32, shape=(None, num_classes), name='y')
     is_training = tf.placeholder(dtype=tf.bool, shape=(), name='isTraining')
     
     model = ConvNet(is_training=is_training, dropout_rate=0.)
