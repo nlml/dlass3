@@ -217,102 +217,88 @@ def train_siamese():
     ########################
 
 
-#def feature_extraction():
-"""
-This method restores a TensorFlow checkpoint file (.ckpt) and rebuilds inference
-model with restored parameters. From then on you can basically use that model in
-any way you want, for instance, feature extraction, finetuning or as a submodule
-of a larger architecture. However, this method should extract features from a
-specified layer and store them in data files such as '.h5', '.npy'/'.npz'
-depending on your preference. You will use those files later in the assignment.
-
-Args:
-    [optional]
-Returns:
-    None
-"""
-
-########################
-# PUT YOUR CODE HERE  #
-########################
-tf.reset_default_graph()
-
-sess = tf.Session()
-
-cifar10 = cifar10_utils.get_cifar10('cifar10/cifar-10-batches-py')
-
-image_shape = cifar10.train.images.shape[1:4]
-num_classes = cifar10.test.labels.shape[1]
-
-x = tf.placeholder(tf.float32, shape=[None] + list(image_shape), name='x')
-y = tf.placeholder(tf.int32, shape=(None, num_classes), name='y')
-is_training = tf.placeholder(dtype=tf.bool, shape=(), name='isTraining')
-
-model = ConvNet(is_training=is_training, dropout_rate=0.)
-
-logits = model.inference(x)
-
-loss = model.loss(logits, y) + \
-       sum(tf.get_collection(tf.GraphKeys.REGULARIZATION_LOSSES))
-tf.scalar_summary('loss_incl_reg', loss)
-accuracy = model.accuracy(logits, y)
-
-with tf.name_scope('train'):
-    optimizer = tf.train.AdamOptimizer()
-    train_op = optimizer.minimize(loss)
-
-# Merge all the summaries
-merged = tf.merge_all_summaries()
-train_writer = tf.train.SummaryWriter(FLAGS.log_dir + '/train', sess.graph)
-test_writer = tf.train.SummaryWriter(FLAGS.log_dir + '/test')
-
-TEST_SIZE = 1000
-
-# Initialise all variables
-tf.initialize_all_variables().run(session=sess)
-
-# Function for getting feed dicts
-def get_fd(c, train=True):
-    if train:
-        xd, yd = c.train.next_batch(FLAGS.batch_size)
-        return {x : xd, y : yd, is_training : True}
-    else:
-        xd, yd = c.test.images[:TEST_SIZE], c.test.labels[:TEST_SIZE]
-        return {x : xd, y : yd, is_training : False}
-
-saver = tf.train.Saver()
-#%%
-checkpoint_path = '/home/liam/cloud/y2uni/dl/ass3/checkpoints/'
-checkpoint_file = 'conv_basic_epoch600.ckpt'
-saver.restore(sess, checkpoint_path + checkpoint_file)
-
-# Get the features for the second fully-connected layer
-x_data, y_data = \
-    cifar10.test.images[:TEST_SIZE], cifar10.test.labels[:TEST_SIZE]
-features = sess.run([model.hidd2], 
-                    {x : x_data, y : y_data, is_training : False})[0]
-
-# Get t-SNE manifold of these features
-tsne = TSNE()
-manifold = tsne.fit_transform(features)
-
-def colourful_scatter(x_2d, one_hot, num_classes):
-# Make a 2D scatter plot with one colour per class
-    colors = cm.rainbow(np.linspace(0, 1, num_classes))
-    for i in range(num_classes):
-        subset = np.where(one_hot.argmax(1) == i)[0]
-        plt.scatter(x_2d[subset, 0], x_2d[subset, 1], color=colors[i])
-    plt.show()
-
-# Plot the manifold
-colourful_scatter(manifold, y_data, num_classes)
-
-#%%
-
-#%%
-########################
-# END OF YOUR CODE    #
-########################
+def feature_extraction():
+    """
+    This method restores a TensorFlow checkpoint file (.ckpt) and rebuilds inference
+    model with restored parameters. From then on you can basically use that model in
+    any way you want, for instance, feature extraction, finetuning or as a submodule
+    of a larger architecture. However, this method should extract features from a
+    specified layer and store them in data files such as '.h5', '.npy'/'.npz'
+    depending on your preference. You will use those files later in the assignment.
+    
+    Args:
+        [optional]
+    Returns:
+        None
+    """
+    
+    ########################
+    # PUT YOUR CODE HERE  #
+    ########################
+    tf.reset_default_graph()
+    
+    sess = tf.Session()
+    
+    cifar10 = cifar10_utils.get_cifar10('cifar10/cifar-10-batches-py')
+    
+    image_shape = cifar10.train.images.shape[1:4]
+    num_classes = cifar10.test.labels.shape[1]
+    
+    x = tf.placeholder(tf.float32, shape=[None] + list(image_shape), name='x')
+    y = tf.placeholder(tf.int32, shape=(None, num_classes), name='y')
+    is_training = tf.placeholder(dtype=tf.bool, shape=(), name='isTraining')
+    
+    model = ConvNet(is_training=is_training, dropout_rate=0.)
+    
+    logits = model.inference(x)
+    
+    loss = model.loss(logits, y) + \
+           sum(tf.get_collection(tf.GraphKeys.REGULARIZATION_LOSSES))
+    tf.scalar_summary('loss_incl_reg', loss)
+    
+    TEST_SIZE = 1000
+    
+    # Initialise all variables
+    tf.initialize_all_variables().run(session=sess)
+    
+    # Function for getting feed dicts
+    def get_fd(c, train=True):
+        if train:
+            xd, yd = c.train.next_batch(FLAGS.batch_size)
+            return {x : xd, y : yd, is_training : True}
+        else:
+            xd, yd = c.test.images[:TEST_SIZE], c.test.labels[:TEST_SIZE]
+            return {x : xd, y : yd, is_training : False}
+    
+    saver = tf.train.Saver()
+    
+    checkpoint_path = '/home/liam/cloud/y2uni/dl/ass3/checkpoints/'
+    checkpoint_file = 'conv_basic_epoch600.ckpt'
+    saver.restore(sess, checkpoint_path + checkpoint_file)
+    
+    # Get the features for the second fully-connected layer
+    x_data, y_data = \
+        cifar10.test.images[:TEST_SIZE], cifar10.test.labels[:TEST_SIZE]
+    features = sess.run([model.hidd2], 
+                        {x : x_data, y : y_data, is_training : False})[0]
+    
+    # Get t-SNE manifold of these features
+    tsne = TSNE()
+    manifold = tsne.fit_transform(features)
+    
+    def colourful_scatter(x_2d, one_hot, num_classes):
+    # Make a 2D scatter plot with one colour per class
+        colors = cm.rainbow(np.linspace(0, 1, num_classes))
+        for i in range(num_classes):
+            subset = np.where(one_hot.argmax(1) == i)[0]
+            plt.scatter(x_2d[subset, 0], x_2d[subset, 1], color=colors[i])
+        plt.show()
+    
+    # Plot the manifold
+    colourful_scatter(manifold, y_data, num_classes)
+    ########################
+    # END OF YOUR CODE    #
+    ########################
 
 def initialize_folders():
     """
@@ -340,7 +326,7 @@ def main(_):
 
     initialize_folders()
 
-    if False:#FLAGS.is_train:
+    if FLAGS.is_train:
         if FLAGS.train_model == 'linear':
             train()
         elif FLAGS.train_model == 'siamese':
