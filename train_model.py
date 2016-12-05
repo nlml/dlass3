@@ -15,7 +15,11 @@ import matplotlib.pyplot as plt
 import matplotlib.cm as cm
 import cPickle
     
-TEST_SIZE = 10000
+if os.path.exists('/home/liam/scratch.py'):
+    TEST_SIZE = 100
+    print ('yo')
+else:
+    TEST_SIZE = 10000
 
 LEARNING_RATE_DEFAULT = 1e-4
 BATCH_SIZE_DEFAULT = 128
@@ -150,7 +154,7 @@ def train():
                  '\nTest accuracy:', acc, 
                  '\nTest loss    :', loss_val)
         
-        if epoch % FLAGS.checkpoint_freq
+        if epoch % FLAGS.checkpoint_freq == 0:
           # Save model checkpoint
           if epoch > 0:
               save_path = saver.save(sess, FLAGS.checkpoint_dir + \
