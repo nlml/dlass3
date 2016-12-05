@@ -13,6 +13,9 @@ from sklearn.manifold import TSNE
 import seaborn as sns
 import matplotlib.pyplot as plt
 import matplotlib.cm as cm
+import cPickle
+    
+TEST_SIZE = 10000
 
 LEARNING_RATE_DEFAULT = 1e-4
 BATCH_SIZE_DEFAULT = 128
@@ -119,8 +122,6 @@ def train():
     merged = tf.merge_all_summaries()
     train_writer = tf.train.SummaryWriter(FLAGS.log_dir + '/train', sess.graph)
     test_writer = tf.train.SummaryWriter(FLAGS.log_dir + '/test')
-    
-    TEST_SIZE = 1000
     
     # Initialise all variables
     tf.initialize_all_variables().run(session=sess)
@@ -254,8 +255,6 @@ def feature_extraction():
            sum(tf.get_collection(tf.GraphKeys.REGULARIZATION_LOSSES))
     tf.scalar_summary('loss_incl_reg', loss)
     
-    TEST_SIZE = 1000
-    
     # Initialise all variables
     tf.initialize_all_variables().run(session=sess)
     
@@ -284,16 +283,9 @@ def feature_extraction():
     tsne = TSNE()
     manifold = tsne.fit_transform(features)
     
-    def colourful_scatter(x_2d, one_hot, num_classes):
-    # Make a 2D scatter plot with one colour per class
-        colors = cm.rainbow(np.linspace(0, 1, num_classes))
-        for i in range(num_classes):
-            subset = np.where(one_hot.argmax(1) == i)[0]
-            plt.scatter(x_2d[subset, 0], x_2d[subset, 1], color=colors[i])
-        plt.show()
-    
-    # Plot the manifold
-    colourful_scatter(manifold, y_data, num_classes)
+    # Save to disk for plotting later
+    indices = np.arange(TEST_SIZE)
+    cPickle.dump((manifold, indices), open('manifold.dump', 'wb'))
     ########################
     # END OF YOUR CODE    #
     ########################

@@ -1,7 +1,7 @@
 #!/bin/bash
 #SBATCH -n 1
 #SBATCH -p gpu
-#SBATCH -t 00:20:00
+#SBATCH -t 00:03:00
 #SBATCH -o job.output
 #SBATCH -e job.error
 
