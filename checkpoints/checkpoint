@@ -1,6 +1,0 @@
-model_checkpoint_path: "conv_basic_epoch700.ckpt"
-all_model_checkpoint_paths: "conv_basic_epoch300.ckpt"
-all_model_checkpoint_paths: "conv_basic_epoch400.ckpt"
-all_model_checkpoint_paths: "conv_basic_epoch500.ckpt"
-all_model_checkpoint_paths: "conv_basic_epoch600.ckpt"
-all_model_checkpoint_paths: "conv_basic_epoch700.ckpt"
