@@ -1,0 +1,13 @@
+#!/bin/bash
+#SBATCH -n 1
+#SBATCH -p gpu
+#SBATCH -t 00:20:00
+#SBATCH -o job.output
+#SBATCH -e job.error
+
+module load python/2.7.11
+module load cuda/7.5.18
+module load cudnn/7.5-v5
+
+srun -u python train_model.py --train_model linear --max_steps 15000 --eval_freq 250 --checkpoint_freq 1000
+
