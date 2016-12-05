@@ -82,7 +82,6 @@ def train():
     checkout:
     [https://www.tensorflow.org/versions/r0.11/how_tos/variables/index.html]
     """
-    #%%
     # Set the random seeds for reproducibility. DO NOT CHANGE.
     tf.set_random_seed(42)
     np.random.seed(42)
@@ -164,7 +163,6 @@ def train():
         sess.run([merged, accuracy, loss], get_fd(cifar10, False))
     test_writer.add_summary(summary, epoch + 1)
     print ('\nFinal test accuracy:', acc, '\nFinal test loss    :', loss_val)
-    #%%
     ########################
     # END OF YOUR CODE    #
     ########################

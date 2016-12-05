@@ -30,7 +30,7 @@ def load_cifar10_batch(batch_filename):
     X = batch['data']
     Y = batch['labels']
     X = X.reshape(10000, 3, 32, 32).transpose(0,2,3,1).astype(np.float32)
-    Y = np.array(Y)
+    Y = np.array(Y).astype(np.float32)
     return X, Y
 
 def load_cifar10(cifar10_folder):
