@@ -1,3 +1,4 @@
 dlass3/checkpoints
 dlass3/cifar10
 dlass3/report
+.git/
