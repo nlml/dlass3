@@ -5,3 +5,6 @@ report/
 checkp*/
 logs/
 rsync-exclude.txt
+tmp_imgs/
+tmp*/
+tmp*

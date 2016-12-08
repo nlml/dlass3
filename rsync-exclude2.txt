@@ -1,0 +1,5 @@
+report/
+logs/
+cifar10/
+.git/
+tmp_images/

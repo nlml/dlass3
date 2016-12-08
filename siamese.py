@@ -41,10 +41,12 @@ class Siamese(object):
 
         https://www.tensorflow.org/versions/r0.11/how_tos/variable_scope/index.html
         """
-        with tf.variable_scope('ConvNet') as conv_scope:
+        with tf.variable_scope('ConvNet', reuse=reuse) as conv_scope:
             ########################
             # PUT YOUR CODE HERE  #
             ########################
+            if reuse:
+                conv_scope.reuse_variables()
             self.conv1 = self._conv2d_layer(x, 'conv1',
                                             kernel_size = 5, 
                                             stride      = 1, 
@@ -74,6 +76,7 @@ class Siamese(object):
                                             output_shape = 192)
 
             self.l2_out = self.fc2 / tf.sqrt(tf.reduce_sum(tf.square(self.fc2)))
+            l2_out = self.l2_out
             ########################
             # END OF YOUR CODE    #
             ########################
@@ -110,9 +113,9 @@ class Siamese(object):
         ########################
         # PUT YOUR CODE HERE  #
         ########################
-        raise NotImplementedError
-        d = 
-        L = label * tf.square(d) + (1 - label) * tf.maximum()
+        d2 = tf.sub(channel_1 - channel_2)
+        d2 = tf.dot(d2, d2)
+        loss = label * d2 + (1 - label) * tf.maximum(margin - d2, 0)
         ########################
         # END OF YOUR CODE    #
         ########################
