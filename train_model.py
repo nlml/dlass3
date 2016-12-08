@@ -20,13 +20,19 @@ CHECKPOINT_FREQ_DEFAULT = 1000
 PRINT_FREQ_DEFAULT = 10
 OPTIMIZER_DEFAULT = 'ADAM'
 SAVE_STUFF_DEFAULT = False
-    
-    
+IS_TRAIN_DEFAULT = True
+
 #### DELETE LATER #######
+IS_TRAIN_DEFAULT = False
+CHECKPOINT_PATH = 'checkpoints/'
+CHECKPOINT_FILE = 'conv_basic_epoch3000.ckpt'
+
 if os.path.exists('/home/liam/'):
     TEST_SIZE = 100
     CHECKPOINT_FREQ_DEFAULT = 1000
     print ('yo')
+    if not IS_TRAIN_DEFAULT:
+        TEST_SIZE = 1000
 else:
     TEST_SIZE = 10000
 #########################
@@ -285,9 +291,7 @@ def feature_extraction():
     
     saver = tf.train.Saver()
     
-    checkpoint_path = '/home/liam/cloud/y2uni/dl/ass3/checkpoints/'
-    checkpoint_file = 'conv_basic_epoch600.ckpt'
-    saver.restore(sess, checkpoint_path + checkpoint_file)
+    saver.restore(sess, CHECKPOINT_PATH + CHECKPOINT_FILE)
     
     # Get the features for the second fully-connected layer
     x_data, y_data = \
@@ -364,7 +368,7 @@ if __name__ == '__main__':
                       help='Summaries log directory')
     parser.add_argument('--checkpoint_dir', type = str, default = CHECKPOINT_DIR_DEFAULT,
                       help='Checkpoint directory')
-    parser.add_argument('--is_train', type = str, default = True,
+    parser.add_argument('--is_train', type = str, default = IS_TRAIN_DEFAULT,
                       help='Training or feature extraction')
     parser.add_argument('--train_model', type = str, default = 'linear',
                       help='Type of model. Possible options: linear and siamese')
