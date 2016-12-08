@@ -14,21 +14,25 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 import matplotlib.cm as cm
 import cPickle
-    
-if os.path.exists('/home/liam/scratch.py'):
-    TEST_SIZE = 100
-    print ('yo')
-else:
-    TEST_SIZE = 10000
 
 LEARNING_RATE_DEFAULT = 1e-4
 BATCH_SIZE_DEFAULT = 128
 MAX_STEPS_DEFAULT = 15000
 EVAL_FREQ_DEFAULT = 1000
-CHECKPOINT_FREQ_DEFAULT = 5000
+CHECKPOINT_FREQ_DEFAULT = 1000
 PRINT_FREQ_DEFAULT = 10
 OPTIMIZER_DEFAULT = 'ADAM'
 SAVE_STUFF_DEFAULT = False
+    
+    
+#### DELETE LATER #######
+if os.path.exists('/home/liam/'):
+    TEST_SIZE = 100
+    CHECKPOINT_FREQ_DEFAULT = 1000
+    print ('yo')
+else:
+    TEST_SIZE = 10000
+#########################
 
 DATA_DIR_DEFAULT = './cifar10/cifar-10-batches-py'
 #LOG_DIR_DEFAULT = './logs/cifar10'
