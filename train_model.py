@@ -10,9 +10,6 @@ import numpy as np
 import cifar10_utils
 from convnet import ConvNet
 from sklearn.manifold import TSNE
-import seaborn as sns
-import matplotlib.pyplot as plt
-import matplotlib.cm as cm
 import cPickle
 
 LEARNING_RATE_DEFAULT = 1e-4
