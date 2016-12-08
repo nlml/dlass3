@@ -64,8 +64,9 @@ class ConvNet(object):
             # Weights
             W_shape = [kernel[0], kernel[1], inp_depth, out_depth]
             
-            W_init  = tf.random_uniform_initializer(minval=-1e-3, maxval=1e-3,
-                                                    dtype=tf.float32)
+            sd      = 1./np.sqrt((int(np.product(x.get_shape()[1:]))))
+            W_init  = tf.truncated_normal_initializer(stddev=sd, 
+                                                      dtype=tf.float32)
             W       = tf.get_variable('W', W_shape, initializer=W_init)
             
             # Biases
@@ -117,7 +118,7 @@ class ConvNet(object):
         
         return out
         
-    def _hidden_layer(self, x, n, output_shape=None, act_fn=None, 
+    def _fc_layer(self, x, n, output_shape=None, act_fn=None, 
                       reg_strength=0., input_shape=None):
         '''
         x            : tensor
@@ -141,8 +142,10 @@ class ConvNet(object):
             
             # Weights
             W_shape = [input_shape, output_shape]
-            W_init  = tf.random_uniform_initializer(minval=-1e-3, maxval=1e-3, 
-                                                    dtype=tf.float32)
+            
+            sd      = 1./np.sqrt(int(np.product(x.get_shape()[1:])))
+            W_init  = tf.truncated_normal_initializer(stddev=sd, 
+                                                      dtype=tf.float32)
             W_reg   = regularizers.l2_regularizer(reg_strength)
             W       = tf.get_variable('W', W_shape, initializer=W_init, 
                                       regularizer=W_reg)
@@ -241,15 +244,15 @@ class ConvNet(object):
             with tf.variable_scope('flatten'):
                 self.flatten = tf.reshape(self.pool2, [-1, 64 * 64])
                 
-            self.hidd1 = self._hidden_layer(self.flatten, 'hidd1',
+            self.fc1 = self._fc_layer(self.flatten, 'fc1',
                                             act_fn       = tf.nn.relu,
                                             reg_strength = 0.001,
                                             output_shape = 384)
-            self.hidd2 = self._hidden_layer(self.hidd1, 'hidd2',
+            self.fc2 = self._fc_layer(self.fc1, 'fc2',
                                             act_fn       = tf.nn.relu,
                                             reg_strength = 0.001,
                                             output_shape = 192)
-            self.logits = self._hidden_layer(self.hidd2, 'logits',
+            self.logits = self._fc_layer(self.fc2, 'logits',
                                              act_fn       = None,
                                              reg_strength = 0.001,
                                              output_shape = 10)

@@ -23,7 +23,7 @@ SAVE_STUFF_DEFAULT = False
 IS_TRAIN_DEFAULT = True
 
 #### DELETE LATER #######
-IS_TRAIN_DEFAULT = False
+IS_TRAIN_DEFAULT = True
 CHECKPOINT_PATH = 'checkpoints/'
 CHECKPOINT_FILE = 'conv_basic_epoch3000.ckpt'
 
@@ -138,7 +138,7 @@ def train():
         test_writer = tf.train.SummaryWriter(FLAGS.log_dir + '/test')
     
     # Initialise all variables
-    tf.initialize_all_variables().run(session=sess)
+    tf.global_variables_initializer().run(session=sess)
     
     # Function for getting feed dicts
     def get_fd(c, train=True):
@@ -278,7 +278,7 @@ def feature_extraction():
     tf.scalar_summary('loss_incl_reg', loss)
     
     # Initialise all variables
-    tf.initialize_all_variables().run(session=sess)
+    tf.global_variables_initializer().run(session=sess)
     
     # Function for getting feed dicts
     def get_fd(c, train=True):
@@ -293,19 +293,44 @@ def feature_extraction():
     
     saver.restore(sess, CHECKPOINT_PATH + CHECKPOINT_FILE)
     
-    # Get the features for the second fully-connected layer
-    x_data, y_data = \
+    # Get testing data for feed dict
+    x_data_test, y_data_test = \
         cifar10.test.images[:TEST_SIZE], cifar10.test.labels[:TEST_SIZE]
-    features = sess.run([model.hidd2], 
-                        {x : x_data, y : y_data, is_training : False})[0]
+        
+    # Get the test set features at flatten, fc1 and fc2 layers
+    flatten_features_test, fc1_features_test, fc2_features_test = \
+        sess.run([model.flatten, model.fc1, model.fc2], 
+                 {x : x_data_test, y : y_data_test, is_training : False})
     
     # Get t-SNE manifold of these features
     tsne = TSNE()
-    manifold = tsne.fit_transform(features)
+    manifold = tsne.fit_transform(fc2_features_test)
     
     # Save to disk for plotting later
     indices = np.arange(TEST_SIZE)
     cPickle.dump((manifold, indices), open('manifold.dump', 'wb'))
+    
+    # Get training data for feed dict
+    x_data_train, y_data_train = \
+        cifar10.train.images[:TEST_SIZE], cifar10.train.labels[:TEST_SIZE]
+        
+    # Get train set features at flatten, fc1 and fc2 layers
+    flatten_features_train, fc1_features_train, fc2_features_train = \
+        sess.run([model.flatten, model.fc1, model.fc2], 
+                 {x : x_data_train, y : y_data_train, is_training : False})
+    
+    from sklearn.multiclass import OneVsRestClassifier
+    from sklearn.svm import SVC
+    features_list = [['flat', flatten_features_train, flatten_features_train],
+                     ['fc1' , fc1_features_train, fc1_features_test],
+                     ['fc2' , fc2_features_train, fc2_features_test]]
+    for name, features_train, features_test in features_list:
+        classif = OneVsRestClassifier(SVC(kernel='linear'))
+        classif.fit(features_train, y_data_train)
+        lm_test_predictions = classif.predict(features_test)
+        acc = np.mean(np.argmax(y_data_test, 1)==np.argmax(lm_test_predictions, 1))
+        print (name, 'accuracy =', np.round(acc*100, 2), '%')
+    
     ########################
     # END OF YOUR CODE    #
     ########################
