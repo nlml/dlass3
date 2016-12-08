@@ -45,7 +45,35 @@ class Siamese(object):
             ########################
             # PUT YOUR CODE HERE  #
             ########################
-            raise NotImplementedError
+            self.conv1 = self._conv2d_layer(x, 'conv1',
+                                            kernel_size = 5, 
+                                            stride      = 1, 
+                                            inp_depth   = 3,
+                                            out_depth   = 64,
+                                            act_fn      = tf.nn.relu)
+            self.pool1 = self._pool_layer(self.conv1, 'pool1', pool_size=3, pool_stride=2)
+            
+            self.conv2 = self._conv2d_layer(self.pool1, 'conv2',
+                                            kernel_size = 5, 
+                                            stride      = 1, 
+                                            inp_depth   = 64,
+                                            out_depth   = 64,
+                                            act_fn      = tf.nn.relu)
+            self.pool2 = self._pool_layer(self.conv2, 'pool2', pool_size=3, pool_stride=2)
+            
+            with tf.variable_scope('flatten'):
+                self.flatten = tf.reshape(self.pool2, [-1, 64 * 64])
+                
+            self.fc1 = self._fc_layer(self.flatten, 'fc1',
+                                            act_fn       = tf.nn.relu,
+                                            reg_strength = self.fc_reg_str,
+                                            output_shape = 384)
+            self.fc2 = self._fc_layer(self.fc1, 'fc2',
+                                            act_fn       = tf.nn.relu,
+                                            reg_strength = self.fc_reg_str,
+                                            output_shape = 192)
+
+            self.l2_out = self.fc2 / tf.sqrt(tf.reduce_sum(tf.square(self.fc2)))
             ########################
             # END OF YOUR CODE    #
             ########################
@@ -83,6 +111,8 @@ class Siamese(object):
         # PUT YOUR CODE HERE  #
         ########################
         raise NotImplementedError
+        d = 
+        L = label * tf.square(d) + (1 - label) * tf.maximum()
         ########################
         # END OF YOUR CODE    #
         ########################

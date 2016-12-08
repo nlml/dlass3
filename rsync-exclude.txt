@@ -1,4 +1,8 @@
-dlass3/checkpoints
-dlass3/cifar10
-dlass3/report
+checkpoints/
+checkpoints_001reg/
+checkpoint\*/
+checkpoint*/
+report/
+logs/
+cifar10/
 .git/

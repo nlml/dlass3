@@ -4,3 +4,4 @@ cifar10/cifar-10-batches-py/
 report/
 checkp*/
 logs/
+rsync-exclude.txt

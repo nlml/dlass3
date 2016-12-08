@@ -23,13 +23,15 @@ SAVE_STUFF_DEFAULT = False
 IS_TRAIN_DEFAULT = True
 
 #### DELETE LATER #######
+WORKING_LOCALLY = False
+
 IS_TRAIN_DEFAULT = True
 CHECKPOINT_PATH_TO_LOAD_FROM = 'checkpoints_new/'
 CHECKPOINT_FILE = 'epoch4000.ckpt'
 
 if os.path.exists('/home/liam/'):
-    WORKING_LOCALLY = True
-    TEST_SIZE = 100
+    #WORKING_LOCALLY = True
+    TEST_SIZE = 1000
     CHECKPOINT_FREQ_DEFAULT = 1000
     if not IS_TRAIN_DEFAULT:
         TEST_SIZE = 1000

@@ -29,6 +29,7 @@ class ConvNet(object):
         self.dropout_rate = dropout_rate
         self.save_stuff = save_stuff
         self.fc_reg_str = fc_reg_str
+        print (self.fc_reg_str)
 
         
     def _list_or_int(self, inp, pad_with_ones=False):
@@ -63,11 +64,13 @@ class ConvNet(object):
             kernel  = self._list_or_int(kernel_size, pad_with_ones=False)
             
             # Weights
-            W_shape = [kernel[0], kernel[1], inp_depth, out_depth]
+            W_shape = kernel + [inp_depth, out_depth]
             
-            sd      = 1./np.sqrt((int(np.product(x.get_shape()[1:]))))
-            W_init  = tf.truncated_normal_initializer(stddev=sd, 
-                                                      dtype=tf.float32)
+            #sd      = 0.001/tf.sqrt(tf.reduce_prod(tf.cast(x.get_shape()[1:],tf.float32)))
+            #W_init  = tf.truncated_normal_initializer(stddev=sd, 
+            #                                          dtype=tf.float32)
+            W_init  = tf.random_uniform_initializer(minval=-1e-3, maxval=1e-3,
+                                                    dtype=tf.float32)
             W       = tf.get_variable('W', W_shape, initializer=W_init)
             
             # Biases
@@ -144,9 +147,11 @@ class ConvNet(object):
             # Weights
             W_shape = [input_shape, output_shape]
             
-            sd      = 1./np.sqrt(int(np.product(x.get_shape()[1:])))
-            W_init  = tf.truncated_normal_initializer(stddev=sd, 
-                                                      dtype=tf.float32)
+            #sd      = 0.001/tf.sqrt(tf.reduce_prod(tf.cast(x.get_shape()[1:],tf.float32)))
+            #W_init  = tf.truncated_normal_initializer(stddev=sd, 
+            #                                          dtype=tf.float32)
+            W_init  = tf.random_uniform_initializer(minval=-1e-3, maxval=1e-3,
+                                                    dtype=tf.float32)
             W_reg   = regularizers.l2_regularizer(reg_strength)
             W       = tf.get_variable('W', W_shape, initializer=W_init, 
                                       regularizer=W_reg)
