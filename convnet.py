@@ -14,7 +14,8 @@ class ConvNet(object):
    in inference.
     """
 
-    def __init__(self, n_classes = 10, is_training=True, dropout_rate=0.):
+    def __init__(self, n_classes = 10, is_training=True, dropout_rate=0.,
+                 save_stuff=False):
         """
         Constructor for an ConvNet object. Default values should be used as hints for
         the usage of each parameter.
@@ -26,6 +27,7 @@ class ConvNet(object):
         self.n_classes = n_classes
         self.is_training = is_training
         self.dropout_rate = dropout_rate
+        self.save_stuff = save_stuff
 
         
     def _list_or_int(self, inp, pad_with_ones=False):
@@ -158,6 +160,7 @@ class ConvNet(object):
                 pre_drop = act_fn(pre_act)
             else:
                 pre_drop = pre_act
+                
             self._histsum('pre_drop', pre_drop)
             
             # Dropout
@@ -173,17 +176,20 @@ class ConvNet(object):
         return output
         
     def _histsum(self, n, x):
-        tf.histogram_summary(tf.get_variable_scope().name + '/' + n, x)
+        if self.save_stuff:
+            tf.histogram_summary(tf.get_variable_scope().name + '/' + n, x)
         
     def _histmean_summary(self, varname, scope):
-        var = tf.get_variable(varname)
-        tf.histogram_summary(scope + '/' + varname + '_hist', var)
+        if self.save_stuff:
+            var = tf.get_variable(varname)
+            tf.histogram_summary(scope + '/' + varname + '_hist', var)
       
     def _get_weights_and_bias_summaries(self, scope):
-        with tf.variable_scope(scope, reuse=True):
-            # Get variables
-            self._histmean_summary('W', scope)
-            self._histmean_summary('b', scope)
+        if self.save_stuff:
+            with tf.variable_scope(scope, reuse=True):
+                # Get variables
+                self._histmean_summary('W', scope)
+                self._histmean_summary('b', scope)
         
     def inference(self, x):
         """

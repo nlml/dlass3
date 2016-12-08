@@ -111,7 +111,8 @@ def train():
     y = tf.placeholder(tf.float32, shape=(None, num_classes), name='y')
     is_training = tf.placeholder(dtype=tf.bool, shape=(), name='isTraining')
     
-    model = ConvNet(is_training=is_training, dropout_rate=0.)
+    model = ConvNet(is_training=is_training, dropout_rate=0., 
+                    save_stuff=FLAGS.save_stuff)
     
     logits = model.inference(x)
     
@@ -128,7 +129,7 @@ def train():
     merged = tf.merge_all_summaries()
     if FLAGS.save_stuff:
         train_writer = tf.train.SummaryWriter(FLAGS.log_dir + '/train', sess.graph)
-    test_writer = tf.train.SummaryWriter(FLAGS.log_dir + '/test')
+        test_writer = tf.train.SummaryWriter(FLAGS.log_dir + '/test')
     
     # Initialise all variables
     tf.initialize_all_variables().run(session=sess)
@@ -149,7 +150,9 @@ def train():
           # Print accuracy and loss on test set
           summary, acc, loss_val = \
               sess.run([merged, accuracy, loss], get_fd(cifar10, False))
-          test_writer.add_summary(summary, epoch)
+              
+          if FLAGS.save_stuff:
+              test_writer.add_summary(summary, epoch)
           
           print ('\nEpoch', epoch, 
                  '\nTest accuracy:', acc, 
@@ -173,7 +176,9 @@ def train():
     # Print the final accuracy
     summary, acc, loss_val = \
         sess.run([merged, accuracy, loss], get_fd(cifar10, False))
-    test_writer.add_summary(summary, epoch + 1)
+    
+    if FLAGS.save_stuff:
+        test_writer.add_summary(summary, epoch + 1)
     print ('\nFinal test accuracy:', acc, '\nFinal test loss    :', loss_val)
     ########################
     # END OF YOUR CODE    #
