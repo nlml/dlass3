@@ -15,7 +15,7 @@ class ConvNet(object):
     """
 
     def __init__(self, n_classes = 10, is_training=True, dropout_rate=0.,
-                 save_stuff=False):
+                 save_stuff=False, fc_reg_str=0.):
         """
         Constructor for an ConvNet object. Default values should be used as hints for
         the usage of each parameter.
@@ -28,6 +28,7 @@ class ConvNet(object):
         self.is_training = is_training
         self.dropout_rate = dropout_rate
         self.save_stuff = save_stuff
+        self.fc_reg_str = fc_reg_str
 
         
     def _list_or_int(self, inp, pad_with_ones=False):
@@ -246,15 +247,15 @@ class ConvNet(object):
                 
             self.fc1 = self._fc_layer(self.flatten, 'fc1',
                                             act_fn       = tf.nn.relu,
-                                            reg_strength = 0.001,
+                                            reg_strength = self.fc_reg_str,
                                             output_shape = 384)
             self.fc2 = self._fc_layer(self.fc1, 'fc2',
                                             act_fn       = tf.nn.relu,
-                                            reg_strength = 0.001,
+                                            reg_strength = self.fc_reg_str,
                                             output_shape = 192)
             self.logits = self._fc_layer(self.fc2, 'logits',
                                              act_fn       = None,
-                                             reg_strength = 0.001,
+                                             reg_strength = self.fc_reg_str,
                                              output_shape = 10)
                 
             ########################

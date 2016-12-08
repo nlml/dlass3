@@ -25,12 +25,12 @@ IS_TRAIN_DEFAULT = True
 #### DELETE LATER #######
 IS_TRAIN_DEFAULT = True
 CHECKPOINT_PATH_TO_LOAD_FROM = 'checkpoints_new/'
-CHECKPOINT_FILE = 'epoch1000.ckpt'
+CHECKPOINT_FILE = 'epoch4000.ckpt'
 
 if os.path.exists('/home/liam/'):
+    WORKING_LOCALLY = True
     TEST_SIZE = 100
     CHECKPOINT_FREQ_DEFAULT = 1000
-    print ('yo')
     if not IS_TRAIN_DEFAULT:
         TEST_SIZE = 1000
 else:
@@ -117,8 +117,10 @@ def train():
     y = tf.placeholder(tf.float32, shape=(None, num_classes), name='y')
     is_training = tf.placeholder(dtype=tf.bool, shape=(), name='isTraining')
     
-    model = ConvNet(is_training=is_training, dropout_rate=0., 
-                    save_stuff=FLAGS.save_stuff)
+    model = ConvNet(is_training=is_training, 
+                    dropout_rate=0., 
+                    save_stuff=FLAGS.save_stuff, 
+                    fc_reg_str=FLAGS.fc_reg_str)
     
     logits = model.inference(x)
     
@@ -238,7 +240,8 @@ def train_siamese():
     ########################
 
 
-def feature_extraction():
+#def feature_extraction():
+if WORKING_LOCALLY:
     """
     This method restores a TensorFlow checkpoint file (.ckpt) and rebuilds inference
     model with restored parameters. From then on you can basically use that model in
@@ -260,7 +263,7 @@ def feature_extraction():
     
     sess = tf.Session()
     
-    #cifar10 = cifar10_utils.get_cifar10('cifar10/cifar-10-batches-py')
+    cifar10 = cifar10_utils.get_cifar10('cifar10/cifar-10-batches-py')
     
     image_shape = cifar10.train.images.shape[1:4]
     num_classes = cifar10.test.labels.shape[1]
@@ -322,9 +325,9 @@ def feature_extraction():
     from sklearn.multiclass import OneVsRestClassifier
     from sklearn.svm import SVC
     features_list = [['flat', flatten_features_train, flatten_features_train],
-                     ['fc1' , fc1_features_train, fc1_features_test],
-                     ['fc2' , fc2_features_train, fc2_features_test]]
-    for name, features_train, features_test in features_list:
+                     ['fc1 ', fc1_features_train, fc1_features_test],
+                     ['fc2 ', fc2_features_train, fc2_features_test]]
+    for (name, features_train, features_test) in features_list:
         classif = OneVsRestClassifier(SVC(kernel='linear'))
         classif.fit(features_train, y_data_train)
         lm_test_predictions = classif.predict(features_test)
@@ -399,7 +402,10 @@ if __name__ == '__main__':
                       help='Type of model. Possible options: linear and siamese')
     parser.add_argument('--save_stuff', type = bool, default = SAVE_STUFF_DEFAULT,
                       help='Whether to save lots of logs')
+    parser.add_argument('--fc_reg_str', type = float, default = 0.0,
+                      help='Regularisation strength on fully-connected layers')
 
     FLAGS, unparsed = parser.parse_known_args()
 
-    tf.app.run()
+    if not WORKING_LOCALLY:
+        tf.app.run()

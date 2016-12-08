@@ -2,4 +2,5 @@
 *~
 cifar10/cifar-10-batches-py/
 report/
-checkpoints/
+checkp*/
+logs/
