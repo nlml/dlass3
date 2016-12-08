@@ -138,7 +138,7 @@ def train():
         test_writer = tf.train.SummaryWriter(FLAGS.log_dir + '/test')
     
     # Initialise all variables
-    tf.global_variables_initializer().run(session=sess)
+    tf.initialize_all_variables().run(session=sess)
     
     # Function for getting feed dicts
     def get_fd(c, train=True):
@@ -278,7 +278,7 @@ def feature_extraction():
     tf.scalar_summary('loss_incl_reg', loss)
     
     # Initialise all variables
-    tf.global_variables_initializer().run(session=sess)
+    tf.initialize_all_variables().run(session=sess)
     
     # Function for getting feed dicts
     def get_fd(c, train=True):
