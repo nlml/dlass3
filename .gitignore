@@ -10,3 +10,4 @@ tmp*/
 tmp*
 manifold.html
 vgg16_weights.npz
+pretrained_params/
