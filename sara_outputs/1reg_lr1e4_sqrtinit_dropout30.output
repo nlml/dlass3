@@ -1,0 +1,633 @@
+save_stuff : False
+is_train : True
+data_dir : ./cifar10/cifar-10-batches-py
+eval_freq : 250
+learning_rate : 0.0001
+print_freq : 10
+standardise : False
+batch_size : 128
+checkpoint_dir : checkpoints_1reg_lr1e4_sqrtinit_dropout30
+log_dir : ./logs/test
+train_model : linear
+checkpoint_freq : 1000
+dropout_rate : 0.3
+max_steps : 15000
+fc_reg_str : 0.1
+0.1
+
+Epoch 0 
+Test accuracy: 0.0955 
+Test loss    : 24.9786
+
+Epoch 100 
+Test accuracy: 0.343 
+Test loss    : 12.4742
+
+Epoch 200 
+Test accuracy: 0.4118 
+Test loss    : 7.74236
+
+Epoch 300 
+Test accuracy: 0.4559 
+Test loss    : 5.52671
+
+Epoch 400 
+Test accuracy: 0.4957 
+Test loss    : 4.27509
+
+Epoch 500 
+Test accuracy: 0.4967 
+Test loss    : 3.53002
+
+Epoch 600 
+Test accuracy: 0.5266 
+Test loss    : 2.98766
+
+Epoch 700 
+Test accuracy: 0.537 
+Test loss    : 2.61933
+
+Epoch 800 
+Test accuracy: 0.5474 
+Test loss    : 2.34958
+
+Epoch 900 
+Test accuracy: 0.5679 
+Test loss    : 2.10163
+
+Epoch 1000 
+Test accuracy: 0.5826 
+Test loss    : 1.93531
+Model saved in file: checkpoints_1reg_lr1e4_sqrtinit_dropout30/epoch1000.ckpt
+
+Epoch 1100 
+Test accuracy: 0.5761 
+Test loss    : 1.84541
+
+Epoch 1200 
+Test accuracy: 0.5927 
+Test loss    : 1.69733
+
+Epoch 1300 
+Test accuracy: 0.5909 
+Test loss    : 1.66263
+
+Epoch 1400 
+Test accuracy: 0.61 
+Test loss    : 1.58778
+
+Epoch 1500 
+Test accuracy: 0.5898 
+Test loss    : 1.59449
+
+Epoch 1600 
+Test accuracy: 0.6138 
+Test loss    : 1.53453
+
+Epoch 1700 
+Test accuracy: 0.6241 
+Test loss    : 1.48575
+
+Epoch 1800 
+Test accuracy: 0.625 
+Test loss    : 1.46255
+
+Epoch 1900 
+Test accuracy: 0.617 
+Test loss    : 1.45265
+
+Epoch 2000 
+Test accuracy: 0.6382 
+Test loss    : 1.39841
+Model saved in file: checkpoints_1reg_lr1e4_sqrtinit_dropout30/epoch2000.ckpt
+
+Epoch 2100 
+Test accuracy: 0.6377 
+Test loss    : 1.3709
+
+Epoch 2200 
+Test accuracy: 0.6361 
+Test loss    : 1.39201
+
+Epoch 2300 
+Test accuracy: 0.6425 
+Test loss    : 1.37773
+
+Epoch 2400 
+Test accuracy: 0.6483 
+Test loss    : 1.34578
+
+Epoch 2500 
+Test accuracy: 0.6518 
+Test loss    : 1.3081
+
+Epoch 2600 
+Test accuracy: 0.6567 
+Test loss    : 1.33711
+
+Epoch 2700 
+Test accuracy: 0.6522 
+Test loss    : 1.31121
+
+Epoch 2800 
+Test accuracy: 0.6562 
+Test loss    : 1.31747
+
+Epoch 2900 
+Test accuracy: 0.6604 
+Test loss    : 1.28674
+
+Epoch 3000 
+Test accuracy: 0.6665 
+Test loss    : 1.29756
+Model saved in file: checkpoints_1reg_lr1e4_sqrtinit_dropout30/epoch3000.ckpt
+
+Epoch 3100 
+Test accuracy: 0.6696 
+Test loss    : 1.29114
+
+Epoch 3200 
+Test accuracy: 0.6637 
+Test loss    : 1.292
+
+Epoch 3300 
+Test accuracy: 0.6741 
+Test loss    : 1.24228
+
+Epoch 3400 
+Test accuracy: 0.6725 
+Test loss    : 1.26076
+
+Epoch 3500 
+Test accuracy: 0.6681 
+Test loss    : 1.24425
+
+Epoch 3600 
+Test accuracy: 0.6643 
+Test loss    : 1.27103
+
+Epoch 3700 
+Test accuracy: 0.6783 
+Test loss    : 1.2413
+
+Epoch 3800 
+Test accuracy: 0.6796 
+Test loss    : 1.234
+
+Epoch 3900 
+Test accuracy: 0.6822 
+Test loss    : 1.23795
+
+Epoch 4000 
+Test accuracy: 0.6877 
+Test loss    : 1.22701
+Model saved in file: checkpoints_1reg_lr1e4_sqrtinit_dropout30/epoch4000.ckpt
+
+Epoch 4100 
+Test accuracy: 0.6866 
+Test loss    : 1.23516
+
+Epoch 4200 
+Test accuracy: 0.699 
+Test loss    : 1.19013
+
+Epoch 4300 
+Test accuracy: 0.6835 
+Test loss    : 1.20057
+
+Epoch 4400 
+Test accuracy: 0.6934 
+Test loss    : 1.19083
+
+Epoch 4500 
+Test accuracy: 0.6951 
+Test loss    : 1.19174
+
+Epoch 4600 
+Test accuracy: 0.6994 
+Test loss    : 1.18354
+
+Epoch 4700 
+Test accuracy: 0.6973 
+Test loss    : 1.17872
+
+Epoch 4800 
+Test accuracy: 0.6977 
+Test loss    : 1.17067
+
+Epoch 4900 
+Test accuracy: 0.6973 
+Test loss    : 1.19257
+
+Epoch 5000 
+Test accuracy: 0.6961 
+Test loss    : 1.18326
+Model saved in file: checkpoints_1reg_lr1e4_sqrtinit_dropout30/epoch5000.ckpt
+
+Epoch 5100 
+Test accuracy: 0.7042 
+Test loss    : 1.15212
+
+Epoch 5200 
+Test accuracy: 0.6963 
+Test loss    : 1.17169
+
+Epoch 5300 
+Test accuracy: 0.6976 
+Test loss    : 1.17364
+
+Epoch 5400 
+Test accuracy: 0.6909 
+Test loss    : 1.18724
+
+Epoch 5500 
+Test accuracy: 0.6947 
+Test loss    : 1.17497
+
+Epoch 5600 
+Test accuracy: 0.6885 
+Test loss    : 1.17597
+
+Epoch 5700 
+Test accuracy: 0.7093 
+Test loss    : 1.13874
+
+Epoch 5800 
+Test accuracy: 0.7053 
+Test loss    : 1.13864
+
+Epoch 5900 
+Test accuracy: 0.7157 
+Test loss    : 1.1284
+
+Epoch 6000 
+Test accuracy: 0.7038 
+Test loss    : 1.1333
+Model saved in file: checkpoints_1reg_lr1e4_sqrtinit_dropout30/epoch6000.ckpt
+
+Epoch 6100 
+Test accuracy: 0.7133 
+Test loss    : 1.12502
+
+Epoch 6200 
+Test accuracy: 0.7148 
+Test loss    : 1.134
+
+Epoch 6300 
+Test accuracy: 0.7113 
+Test loss    : 1.11846
+
+Epoch 6400 
+Test accuracy: 0.7132 
+Test loss    : 1.11889
+
+Epoch 6500 
+Test accuracy: 0.7077 
+Test loss    : 1.12336
+
+Epoch 6600 
+Test accuracy: 0.7041 
+Test loss    : 1.13244
+
+Epoch 6700 
+Test accuracy: 0.7126 
+Test loss    : 1.1158
+
+Epoch 6800 
+Test accuracy: 0.7103 
+Test loss    : 1.12033
+
+Epoch 6900 
+Test accuracy: 0.707 
+Test loss    : 1.12429
+
+Epoch 7000 
+Test accuracy: 0.7205 
+Test loss    : 1.10819
+Model saved in file: checkpoints_1reg_lr1e4_sqrtinit_dropout30/epoch7000.ckpt
+
+Epoch 7100 
+Test accuracy: 0.7163 
+Test loss    : 1.11537
+
+Epoch 7200 
+Test accuracy: 0.7028 
+Test loss    : 1.14021
+
+Epoch 7300 
+Test accuracy: 0.7109 
+Test loss    : 1.12347
+
+Epoch 7400 
+Test accuracy: 0.7001 
+Test loss    : 1.12522
+
+Epoch 7500 
+Test accuracy: 0.719 
+Test loss    : 1.08761
+
+Epoch 7600 
+Test accuracy: 0.7135 
+Test loss    : 1.10539
+
+Epoch 7700 
+Test accuracy: 0.7266 
+Test loss    : 1.09988
+
+Epoch 7800 
+Test accuracy: 0.7221 
+Test loss    : 1.08817
+
+Epoch 7900 
+Test accuracy: 0.7113 
+Test loss    : 1.113
+
+Epoch 8000 
+Test accuracy: 0.7286 
+Test loss    : 1.09169
+Model saved in file: checkpoints_1reg_lr1e4_sqrtinit_dropout30/epoch8000.ckpt
+
+Epoch 8100 
+Test accuracy: 0.722 
+Test loss    : 1.08508
+
+Epoch 8200 
+Test accuracy: 0.7235 
+Test loss    : 1.09773
+
+Epoch 8300 
+Test accuracy: 0.7155 
+Test loss    : 1.10478
+
+Epoch 8400 
+Test accuracy: 0.724 
+Test loss    : 1.09777
+
+Epoch 8500 
+Test accuracy: 0.7201 
+Test loss    : 1.10181
+
+Epoch 8600 
+Test accuracy: 0.7311 
+Test loss    : 1.04829
+
+Epoch 8700 
+Test accuracy: 0.7252 
+Test loss    : 1.07727
+
+Epoch 8800 
+Test accuracy: 0.7293 
+Test loss    : 1.06675
+
+Epoch 8900 
+Test accuracy: 0.7341 
+Test loss    : 1.06849
+
+Epoch 9000 
+Test accuracy: 0.7381 
+Test loss    : 1.05382
+Model saved in file: checkpoints_1reg_lr1e4_sqrtinit_dropout30/epoch9000.ckpt
+
+Epoch 9100 
+Test accuracy: 0.7284 
+Test loss    : 1.07728
+
+Epoch 9200 
+Test accuracy: 0.735 
+Test loss    : 1.05396
+
+Epoch 9300 
+Test accuracy: 0.7286 
+Test loss    : 1.06772
+
+Epoch 9400 
+Test accuracy: 0.7321 
+Test loss    : 1.06225
+
+Epoch 9500 
+Test accuracy: 0.7323 
+Test loss    : 1.0714
+
+Epoch 9600 
+Test accuracy: 0.7367 
+Test loss    : 1.04265
+
+Epoch 9700 
+Test accuracy: 0.7394 
+Test loss    : 1.05061
+
+Epoch 9800 
+Test accuracy: 0.7335 
+Test loss    : 1.04318
+
+Epoch 9900 
+Test accuracy: 0.7273 
+Test loss    : 1.07773
+
+Epoch 10000 
+Test accuracy: 0.7319 
+Test loss    : 1.06269
+Model saved in file: checkpoints_1reg_lr1e4_sqrtinit_dropout30/epoch10000.ckpt
+
+Epoch 10100 
+Test accuracy: 0.7321 
+Test loss    : 1.05706
+
+Epoch 10200 
+Test accuracy: 0.7268 
+Test loss    : 1.05488
+
+Epoch 10300 
+Test accuracy: 0.7322 
+Test loss    : 1.06145
+
+Epoch 10400 
+Test accuracy: 0.7221 
+Test loss    : 1.0751
+
+Epoch 10500 
+Test accuracy: 0.7389 
+Test loss    : 1.04554
+
+Epoch 10600 
+Test accuracy: 0.7409 
+Test loss    : 1.04148
+
+Epoch 10700 
+Test accuracy: 0.7407 
+Test loss    : 1.04193
+
+Epoch 10800 
+Test accuracy: 0.7397 
+Test loss    : 1.01938
+
+Epoch 10900 
+Test accuracy: 0.7424 
+Test loss    : 1.03919
+
+Epoch 11000 
+Test accuracy: 0.7411 
+Test loss    : 1.02908
+Model saved in file: checkpoints_1reg_lr1e4_sqrtinit_dropout30/epoch11000.ckpt
+
+Epoch 11100 
+Test accuracy: 0.7411 
+Test loss    : 1.05044
+
+Epoch 11200 
+Test accuracy: 0.7327 
+Test loss    : 1.05422
+
+Epoch 11300 
+Test accuracy: 0.7415 
+Test loss    : 1.05159
+
+Epoch 11400 
+Test accuracy: 0.7424 
+Test loss    : 1.01986
+
+Epoch 11500 
+Test accuracy: 0.7401 
+Test loss    : 1.01508
+
+Epoch 11600 
+Test accuracy: 0.747 
+Test loss    : 1.02565
+
+Epoch 11700 
+Test accuracy: 0.747 
+Test loss    : 1.02538
+
+Epoch 11800 
+Test accuracy: 0.7388 
+Test loss    : 1.04627
+
+Epoch 11900 
+Test accuracy: 0.7475 
+Test loss    : 1.01785
+
+Epoch 12000 
+Test accuracy: 0.7367 
+Test loss    : 1.0466
+Model saved in file: checkpoints_1reg_lr1e4_sqrtinit_dropout30/epoch12000.ckpt
+
+Epoch 12100 
+Test accuracy: 0.7316 
+Test loss    : 1.025
+
+Epoch 12200 
+Test accuracy: 0.7532 
+Test loss    : 1.00433
+
+Epoch 12300 
+Test accuracy: 0.7439 
+Test loss    : 1.05074
+
+Epoch 12400 
+Test accuracy: 0.7473 
+Test loss    : 1.02338
+
+Epoch 12500 
+Test accuracy: 0.7464 
+Test loss    : 1.01328
+
+Epoch 12600 
+Test accuracy: 0.7414 
+Test loss    : 1.03343
+
+Epoch 12700 
+Test accuracy: 0.7369 
+Test loss    : 1.03083
+
+Epoch 12800 
+Test accuracy: 0.7517 
+Test loss    : 1.01198
+
+Epoch 12900 
+Test accuracy: 0.7509 
+Test loss    : 0.994992
+
+Epoch 13000 
+Test accuracy: 0.7362 
+Test loss    : 1.03704
+Model saved in file: checkpoints_1reg_lr1e4_sqrtinit_dropout30/epoch13000.ckpt
+
+Epoch 13100 
+Test accuracy: 0.7439 
+Test loss    : 1.02328
+
+Epoch 13200 
+Test accuracy: 0.753 
+Test loss    : 1.01326
+
+Epoch 13300 
+Test accuracy: 0.7475 
+Test loss    : 1.01227
+
+Epoch 13400 
+Test accuracy: 0.7502 
+Test loss    : 0.998123
+
+Epoch 13500 
+Test accuracy: 0.7462 
+Test loss    : 1.01583
+
+Epoch 13600 
+Test accuracy: 0.7469 
+Test loss    : 1.01503
+
+Epoch 13700 
+Test accuracy: 0.7482 
+Test loss    : 0.991305
+
+Epoch 13800 
+Test accuracy: 0.7508 
+Test loss    : 1.00895
+
+Epoch 13900 
+Test accuracy: 0.746 
+Test loss    : 1.02094
+
+Epoch 14000 
+Test accuracy: 0.7546 
+Test loss    : 0.996829
+Model saved in file: checkpoints_1reg_lr1e4_sqrtinit_dropout30/epoch14000.ckpt
+
+Epoch 14100 
+Test accuracy: 0.7494 
+Test loss    : 1.00153
+
+Epoch 14200 
+Test accuracy: 0.7527 
+Test loss    : 1.00871
+
+Epoch 14300 
+Test accuracy: 0.7503 
+Test loss    : 1.00814
+
+Epoch 14400 
+Test accuracy: 0.7499 
+Test loss    : 0.993898
+
+Epoch 14500 
+Test accuracy: 0.7481 
+Test loss    : 1.00051
+
+Epoch 14600 
+Test accuracy: 0.7542 
+Test loss    : 0.996165
+
+Epoch 14700 
+Test accuracy: 0.7447 
+Test loss    : 1.03142
+
+Epoch 14800 
+Test accuracy: 0.7501 
+Test loss    : 0.995816
+
+Epoch 14900 
+Test accuracy: 0.7606 
+Test loss    : 0.98008
+
+Final test accuracy: 0.7556 
+Final test loss    : 1.00965

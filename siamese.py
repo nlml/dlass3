@@ -5,9 +5,9 @@ from __future__ import print_function
 import tensorflow as tf
 import numpy as np
 
+from convnet import ConvNet
 
-
-class Siamese(object):
+class Siamese(ConvNet):
     """
     This class implements a siamese convolutional neural network in
     TensorFlow. Term siamese is used to refer to architectures which
@@ -113,9 +113,9 @@ class Siamese(object):
         ########################
         # PUT YOUR CODE HERE  #
         ########################
-        d2 = tf.sub(channel_1 - channel_2)
-        d2 = tf.dot(d2, d2)
-        loss = label * d2 + (1 - label) * tf.maximum(margin - d2, 0)
+        d2 = tf.reduce_sum(tf.square(channel_1 - channel_2))
+        contrast = label * d2 + (1 - label) * tf.maximum(margin - d2, 0)
+        loss = tf.reduce_mean(contrast)
         ########################
         # END OF YOUR CODE    #
         ########################

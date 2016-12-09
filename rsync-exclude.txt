@@ -7,3 +7,6 @@ logs/
 cifar10/
 .git/
 tmp_images/
+tmp\*/
+tmp*/
+manifold.html

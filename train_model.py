@@ -8,6 +8,8 @@ import os
 import tensorflow as tf
 import numpy as np
 import cifar10_utils
+import cifar10_siamese_utils
+from cifar10_siamese_utils import create_dataset
 from convnet import ConvNet
 from siamese import Siamese
 from sklearn.manifold import TSNE
@@ -23,28 +25,60 @@ OPTIMIZER_DEFAULT = 'ADAM'
 SAVE_STUFF_DEFAULT = False
 IS_TRAIN_DEFAULT = True
 
-#### DELETE LATER #######
-WORKING_LOCALLY = False
+TEST_SIZE = 10000
+SIAMESE_VALI_NTUPLES = 50
+SIAMESE_MARGIN_DEFAULT = 1.0
+TRAIN_MODEL_DEFAULT = 'siamese'
 
-IS_TRAIN_DEFAULT = True
-CHECKPOINT_PATH_TO_LOAD_FROM = 'checkpoints_1reg_lr1e4_sqrtinit/'
-CHECKPOINT_FILE = 'epoch12000.ckpt'
-
-if os.path.exists('/home/liam/'):
-    tf.reset_default_graph()
-    WORKING_LOCALLY = True
-    TEST_SIZE = 1000
-    CHECKPOINT_FREQ_DEFAULT = 1000
-    if not IS_TRAIN_DEFAULT:
-        TEST_SIZE = 1000
-else:
-    TEST_SIZE = 10000
-#########################
+#==============================================================================
+# #### DELETE LATER #######
+# SIAMESE_VALI_NTUPLES = 10
+# SIAMESE_MARGIN_DEFAULT = 1.0
+# 
+# 
+# IS_TRAIN_DEFAULT = True
+# CHECKPOINT_PATH_TO_LOAD_FROM = 'checkpoints_1reg_lr1e4_sqrtinit/'
+# CHECKPOINT_FILE = 'epoch12000.ckpt'
+# 
+# tf.reset_default_graph()
+# TEST_SIZE = 1000
+# CHECKPOINT_FREQ_DEFAULT = 1000
+# #########################
+#==============================================================================
 
 DATA_DIR_DEFAULT = './cifar10/cifar-10-batches-py'
-#LOG_DIR_DEFAULT = './logs/cifar10'
+LOG_DIR_DEFAULT = './logs/cifar10'
 LOG_DIR_DEFAULT = './logs/test'
 CHECKPOINT_DIR_DEFAULT = './checkpoints'
+
+def wrap_cifar(cifar10, FLAGS):
+    if FLAGS.standardise:
+        class DataWrap():
+            def __init__(self, dataset, sd):
+                self.dataset = dataset
+                self.sd = sd
+                self.images = self.dataset.images / self.sd
+                self.labels = self.dataset.labels
+            def next_batch(self, sz):
+                x, y = self.dataset.next_batch(sz)
+                return x / self.sd, y
+        class CIFARWrapper():
+            def __init__(self, cifar10_obj):
+                self.sd = np.std(cifar10_obj.train.images, axis=0)
+                self.train = DataWrap(cifar10_obj.train, self.sd)
+                self.test = DataWrap(cifar10_obj.test, self.sd)
+        cifar10 = CIFARWrapper(cifar10)
+    return cifar10
+    
+def standard_cifar10_get(FLAGS):
+    if FLAGS.train_model == 'siamese':
+        cifar10     = cifar10_siamese_utils.get_cifar10(FLAGS.data_dir)
+    else:
+        cifar10     = cifar10_utils.get_cifar10(FLAGS.data_dir)
+    cifar10         = wrap_cifar(cifar10, FLAGS)
+    image_shape     = cifar10.train.images.shape[1:4]
+    num_classes     = cifar10.test.labels.shape[1]
+    return cifar10, image_shape, num_classes 
 
 def train_step(loss):
     """
@@ -110,9 +144,7 @@ def train():
     ########################
     
     # Cifar10 stuff
-    cifar10         = cifar10_utils.get_cifar10(FLAGS.data_dir)
-    image_shape     = cifar10.train.images.shape[1:4]
-    num_classes     = cifar10.test.labels.shape[1]
+    cifar10, image_shape, num_classes = standard_cifar10_get(FLAGS)
     
     # Placeholder variables
     x = tf.placeholder(tf.float32, shape=[None] + list(image_shape), name='x')
@@ -121,7 +153,7 @@ def train():
     
     # CNN model
     model = ConvNet(is_training=is_training, 
-                    dropout_rate=0., 
+                    dropout_rate=FLAGS.dropout_rate, 
                     save_stuff=FLAGS.save_stuff, 
                     fc_reg_str=FLAGS.fc_reg_str)
     
@@ -160,7 +192,7 @@ def train():
         # Start training loops
         for epoch in range(0, FLAGS.max_steps):
             if epoch % 100 == 0:
-                
+
               # Print accuracy and loss on test set
               summary, acc, loss_val = \
                   sess.run([merged, accuracy, loss], get_feed(cifar10, False))
@@ -195,6 +227,10 @@ def train():
             test_writer.add_summary(summary, epoch + 1)
         print ('\nFinal test accuracy:', acc,
                '\nFinal test loss    :', loss_val)
+               
+        save_path = saver.save(sess, FLAGS.checkpoint_dir + \
+                               '/epoch'+ str(epoch + 1) + '.ckpt')
+        print("Model saved in file: %s" % save_path)
     ########################
     # END OF YOUR CODE    #
     ########################
@@ -203,12 +239,12 @@ def train():
 def train_siamese():
     """
     Performs training and evaluation of Siamese model.
-
+    
     First define your graph using class Siamese and its methods. Then define
     necessary operations such as trainer (train_step in this case), savers
     and summarizers. Finally, initialize your model within a tf.Session and
     do the training.
-
+    
     ---------------------------
     How to evaluate your model:
     ---------------------------
@@ -217,13 +253,13 @@ def train_siamese():
     validation set using the data sampling function you implement for siamese
     architecture. What you need to do is to iterate over all minibatches in
     the validation set and calculate the average loss over all minibatches.
-
+    
     ---------------------------------
     How often to evaluate your model:
     ---------------------------------
     - on training set every print_freq iterations
     - on test set every eval_freq iterations
-
+    
     ------------------------
     Additional requirements:
     ------------------------
@@ -233,51 +269,56 @@ def train_siamese():
     checkout:
     [https://www.tensorflow.org/versions/r0.11/how_tos/variables/index.html]
     """
-
+    
     # Set the random seeds for reproducibility. DO NOT CHANGE.
     tf.set_random_seed(42)
     np.random.seed(42)
-
+    
     ########################
     # PUT YOUR CODE HERE  #
     ########################
     
     # Cifar10 stuff
-    cifar10         = cifar10_utils.get_cifar10(FLAGS.data_dir)
-    image_shape     = cifar10.train.images.shape[1:4]
-    num_classes     = cifar10.test.labels.shape[1]
+    cifar10, image_shape, num_classes = standard_cifar10_get(FLAGS)
     
     # Placeholder variables
-    x = tf.placeholder(tf.float32, shape=[None] + list(image_shape), name='x')
-    y = tf.placeholder(tf.float32, shape=(None, 1), name='y')
+    x1 = tf.placeholder(tf.float32, shape=[None] + list(image_shape), name='x1')
+    x2 = tf.placeholder(tf.float32, shape=[None] + list(image_shape), name='x2')
+    y = tf.placeholder(tf.float32, shape=(None), name='y')
     is_training = tf.placeholder(dtype=tf.bool, shape=(), name='isTraining')
+    margin = tf.placeholder(tf.float32, shape=(), name='margin')
     
     # CNN model
     model = Siamese(is_training=is_training, 
-                    dropout_rate=0., 
+                    dropout_rate=FLAGS.dropout_rate, 
                     save_stuff=FLAGS.save_stuff, 
                     fc_reg_str=FLAGS.fc_reg_str)
     
-    ##### SIAMESE MARGIN PARAM ######
-    siamese_margin = 1.0    
-    ################################
-    
     # Get outputs of two siamese models, loss, train optimisation step
-    l2_out_1 = model.inference(x)
-    l2_out_2 = model.inference(x, reuse=True)
-    reg_loss = sum(tf.get_collection(tf.GraphKeys.REGULARIZATION_LOSSES))
-    loss     = model.loss(l2_out_1, l2_out_2, y, siamese_margin) + reg_loss
-    tf.scalar_summary('loss_incl_reg', loss)
-    train_op = train_step(loss)
+    l2_out_1    = model.inference(x1)
+    l2_out_2    = model.inference(x2, reuse=True)
+    loss_no_reg = model.loss(l2_out_1, l2_out_2, y, margin)
+    reg_loss    = sum(tf.get_collection(tf.GraphKeys.REGULARIZATION_LOSSES))
+    loss_w_reg  = loss_no_reg + reg_loss
+    tf.scalar_summary('loss_incl_reg', loss_w_reg)
+    train_op    = train_step(loss_w_reg)
+    
+    validation_tuples = create_dataset(cifar10.train, 
+                                       num_tuples=SIAMESE_VALI_NTUPLES)
+    xv1, xv2, yv = np.vstack([i[0] for i in validation_tuples]),\
+                   np.vstack([i[1] for i in validation_tuples]),\
+                   np.hstack([i[2] for i in validation_tuples])
     
     # Function for getting feed dicts
     def get_feed(c, train=True):
-        if train:
-            xd, yd = c.train.next_batch(FLAGS.batch_size)
-            return {x : xd, y : yd, is_training : True}
+        if train=='train' or train=='t':
+            xd1, xd2, yd = c.train.next_batch(FLAGS.batch_size)
+            return {x1 : xd1, x2 : xd2, y : yd, is_training : True, margin : FLAGS.siamese_margin}
+        elif train=='vali' or train=='v' or train=='validation':
+            return {x1 : xv1, x2 : xv2, y : yv, is_training : False, margin : FLAGS.siamese_margin}     
         else:
-            xd, yd = c.test.images[:TEST_SIZE], c.test.labels[:TEST_SIZE]
-            return {x : xd, y : yd, is_training : False}
+            pass
+        # TODO Implement test set feed dict siamese
     
     # For saving checkpoints
     saver = tf.train.Saver()
@@ -298,16 +339,15 @@ def train_siamese():
         for epoch in range(0, FLAGS.max_steps):
             if epoch % 100 == 0:
                 
-              # Print accuracy and loss on test set
-              summary, acc, loss_val = \
-                  sess.run([merged, accuracy, loss], get_feed(cifar10, False))
+              # Print accuracy and loss on validation set
+              summary, loss_val = \
+                  sess.run([merged, loss], get_feed(cifar10, 'vali'))
                   
               if FLAGS.save_stuff:
                   test_writer.add_summary(summary, epoch)
               
               print ('\nEpoch', epoch, 
-                     '\nTest accuracy:', acc, 
-                     '\nTest loss    :', loss_val)
+                     '\nValidation loss    :', loss_val)
             
             if epoch % FLAGS.checkpoint_freq == 0:
               # Save model checkpoint
@@ -319,26 +359,25 @@ def train_siamese():
             # Do training update
             if FLAGS.save_stuff:
                 summary, _ = sess.run([merged, train_op], 
-                                      feed_dict=get_feed(cifar10, True))
+                                      feed_dict=get_feed(cifar10, 'train'))
                 train_writer.add_summary(summary, epoch)
             else:
-                sess.run([train_op], feed_dict=get_feed(cifar10, True))
+                sess.run([train_op], feed_dict=get_feed(cifar10, 'train'))
         
         # Print the final accuracy
-        summary, acc, loss_val = \
-            sess.run([merged, accuracy, loss], get_feed(cifar10, False))
+        summary, loss_val = \
+            sess.run([merged, loss], get_feed(cifar10, 'vali'))
         
         if FLAGS.save_stuff:
             test_writer.add_summary(summary, epoch + 1)
-        print ('\nFinal test accuracy:', acc,
-               '\nFinal test loss    :', loss_val)
-    ########################
-    # END OF YOUR CODE    #
-    ########################
+        print ('\nFinal validation loss    :', loss_val)
+    
+########################
+# END OF YOUR CODE    #
+########################
 
 
-#def feature_extraction():
-if WORKING_LOCALLY:
+def feature_extraction():
     """
     This method restores a TensorFlow checkpoint file (.ckpt) and rebuilds inference
     model with restored parameters. From then on you can basically use that model in
@@ -362,16 +401,13 @@ if WORKING_LOCALLY:
     
     sess = tf.Session()
     
-    cifar10 = cifar10_utils.get_cifar10('cifar10/cifar-10-batches-py')
-    
-    image_shape = cifar10.train.images.shape[1:4]
-    num_classes = cifar10.test.labels.shape[1]
+    cifar10, image_shape, num_classes = standard_cifar10_get(FLAGS)
     
     x = tf.placeholder(tf.float32, shape=[None] + list(image_shape), name='x')
     y = tf.placeholder(tf.int32, shape=(None, num_classes), name='y')
     is_training = tf.placeholder(dtype=tf.bool, shape=(), name='isTraining')
     
-    model = ConvNet(is_training=is_training, dropout_rate=0.)
+    model = ConvNet(is_training=is_training, dropout_rate=FLAGS.dropout_rate)
     
     logits = model.inference(x)
     
@@ -384,7 +420,7 @@ if WORKING_LOCALLY:
     
     # Restore checkpoint
     saver = tf.train.Saver()
-    saver.restore(sess, CHECKPOINT_PATH_TO_LOAD_FROM + CHECKPOINT_FILE)
+    saver.restore(sess, CHECKPOINT_PATH_TO_LOAD_FROM + CHECKPOINT_FILE) 
     
     # Get testing data for feed dict
     x_data_test, y_data_test = \
@@ -488,14 +524,19 @@ if __name__ == '__main__':
                       help='Checkpoint directory')
     parser.add_argument('--is_train', type = str, default = IS_TRAIN_DEFAULT,
                       help='Training or feature extraction')
-    parser.add_argument('--train_model', type = str, default = 'linear',
+    parser.add_argument('--train_model', type = str, default = TRAIN_MODEL_DEFAULT,
                       help='Type of model. Possible options: linear and siamese')
     parser.add_argument('--save_stuff', type = bool, default = SAVE_STUFF_DEFAULT,
                       help='Whether to save lots of logs')
     parser.add_argument('--fc_reg_str', type = float, default = 0.0,
                       help='Regularisation strength on fully-connected layers')
+    parser.add_argument('--standardise', type = bool, default = False,
+                      help='Whether to divide images by stdev')
+    parser.add_argument('--dropout_rate', type = float, default = 0.0,
+                      help='Dropout rate for FC layers')
+    parser.add_argument('--siamese_margin', type = float, default = SIAMESE_MARGIN_DEFAULT,
+                      help='Margin for siamese contrastive loss')
 
     FLAGS, unparsed = parser.parse_known_args()
 
-    if not WORKING_LOCALLY:
-        tf.app.run()
+    tf.app.run()

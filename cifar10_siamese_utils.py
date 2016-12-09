@@ -12,7 +12,6 @@ import cPickle as pickle
 
 from six.moves import xrange
 
-import random
 from tensorflow.contrib.learn.python.learn.datasets import base
 
 # Default paths for downloading CIFAR10 data
@@ -119,7 +118,8 @@ def dense_to_one_hot(labels_dense, num_classes):
   labels_one_hot.flat[index_offset + labels_dense.ravel()] = 1
   return labels_one_hot
 
-def create_dataset(source='Train', num_tuples = 500, batch_size = 128, fraction_same = 0.2):
+def create_dataset(dataset, num_tuples = 500, batch_size = 128,
+                   fraction_same = 0.2):
     """
     Creates a list of validation tuples. A tuple consist of image pairs and a label.
     A tuple is basically a minibatch to be used in validation.
@@ -156,7 +156,12 @@ def create_dataset(source='Train', num_tuples = 500, batch_size = 128, fraction_
     ########################
     # PUT YOUR CODE HERE  #
     ########################
-    raise NotImplementedError
+    if dataset is None:
+        raise Exception(
+            'You must provide a dataset to get validation samples from.')
+    dataset._validation_idxs = []
+    dset = [dataset.next_batch(batch_size, fraction_same, validation=True) \
+            for i in range(num_tuples)]
     ########################
     # END OF YOUR CODE    #
     ########################
@@ -183,7 +188,8 @@ class DataSet(object):
     self._epochs_completed = 0
     self._index_in_epoch = 0
     self._id_list = []
-    self.classes = np.argmax(train.labels, 1)
+    self._validation_idxs = []
+    self.classes = np.argmax(self.labels, 1)
 
   @property
   def images(self):
@@ -201,7 +207,7 @@ class DataSet(object):
   def epochs_completed(self):
     return self._epochs_completed
 
-  def next_batch(self, batch_size, fraction_same = 0.2):
+  def next_batch(self, batch_size, fraction_same = 0.2, validation=False):
     """
     Returns the next `batch_size` examples from this data set. A batch consist of image pairs and a label.
 
@@ -237,13 +243,35 @@ class DataSet(object):
     ########################
     # PUT YOUR CODE HERE  #
     ########################
-    anchor_idx = np.random.randint(len(self.images))
+    anchor_idx = self._index_in_epoch
+    if validation:
+        self._validation_idxs.append(anchor_idx)
+    else:
+        while anchor_idx in self._validation_idxs:
+            self._index_in_epoch += 1
+            anchor_idx = self._index_in_epoch    
+    self._index_in_epoch += 1
+    
+    if self._index_in_epoch > self._num_examples:
+        self._epochs_completed += 1
+
+        perm = np.arange(self._num_examples)
+        np.random.shuffle(perm)
+        self._images = self._images[perm]
+        self._labels = self._labels[perm]
+
+        anchor_idx = 0
+        self._index_in_epoch = 1
+        assert batch_size <= self._num_examples
+
     anchor_class = np.argmax(self.labels[anchor_idx])
 
+    num_same  = int(batch_size * fraction_same)
+
     same_idxs = np.random.choice(np.where(self.classes == anchor_class)[0], 
-                                 int(batch_size * fraction_same),replace=False)
+                                 num_same, replace=False)
     diff_idxs = np.random.choice(np.where(self.classes != anchor_class)[0], 
-                                 int(batch_size * fraction_same),replace=False)
+                                 batch_size - num_same, replace=False)
     
     indexs = np.hstack((same_idxs, diff_idxs))
     labels = np.hstack((np.repeat(1, len(same_idxs)),
@@ -258,8 +286,8 @@ class DataSet(object):
     indexs = indexs[shuffled_order]
     labels = labels[shuffled_order]
 
-    x1 = np.resize(self.images[anchor_idx], (batch_size, 32, 32, 3))
-    x2 = self.images[indexs]
+    x1 = np.resize(self._images[anchor_idx], (batch_size, 32, 32, 3))
+    x2 = self._images[indexs]
     ########################
     # END OF YOUR CODE    #
     ########################
