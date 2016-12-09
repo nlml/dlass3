@@ -9,3 +9,4 @@ tmp_imgs/
 tmp*/
 tmp*
 manifold.html
+vgg16_weights.npz
