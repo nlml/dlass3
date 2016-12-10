@@ -8,9 +8,14 @@ import os
 import tensorflow as tf
 import numpy as np
 
+import cifar10_vgg as cifar10_utils
+
+from vgg import load_pretrained_VGG16_pool5
+from vgg_readout import VGGReadOut
+
 LEARNING_RATE_DEFAULT = 1e-4
 BATCH_SIZE_DEFAULT = 128
-MAX_STEPS_DEFAULT = 15000
+MAX_STEPS_DEFAULT = 10000
 EVAL_FREQ_DEFAULT = 1000
 CHECKPOINT_FREQ_DEFAULT = 5000
 PRINT_FREQ_DEFAULT = 10
@@ -20,6 +25,17 @@ REFINE_AFTER_K_STEPS_DEFAULT = 0
 DATA_DIR_DEFAULT = './cifar10/cifar-10-batches-py'
 LOG_DIR_DEFAULT = './logs/cifar10'
 CHECKPOINT_DIR_DEFAULT = './checkpoints'
+
+### NEW ###
+tf.reset_default_graph()
+TEST_SIZE_DEFAULT = 200
+###########
+    
+def standard_cifar10_get(FLAGS):
+    cifar10         = cifar10_utils.get_cifar10(FLAGS.data_dir)
+    image_shape     = cifar10.train.images.shape[1:4]
+    num_classes     = cifar10.test.labels.shape[1]
+    return cifar10, image_shape, num_classes 
 
 def train_step(loss):
     """
@@ -36,13 +52,146 @@ def train_step(loss):
     ########################
     # PUT YOUR CODE HERE  #
     ########################
-    raise NotImplementedError
+    optimizer = tf.train.AdamOptimizer(FLAGS.learning_rate)
+    train_op = optimizer.minimize(loss)
     ########################
     # END OF YOUR CODE    #
     ########################
 
     return train_op
 
+def feature_extraction():
+    """
+    Performs training and evaluation of your model.
+    
+    First define your graph using vgg.py with your fully connected layer.
+    Then define necessary operations such as trainer (train_step in this case),
+    savers and summarizers. Finally, initialize your model within a
+    tf.Session and do the training.
+    
+    ---------------------------------
+    How often to evaluate your model:
+    ---------------------------------
+    - on training set every PRINT_FREQ iterations
+    - on test set every EVAL_FREQ iterations
+    
+    ---------------------------
+    How to evaluate your model:
+    ---------------------------
+    Evaluation on test set should be conducted over full batch, i.e. 10k images,
+    while it is alright to do it over minibatch for train set.
+    """
+
+    # Set the random seeds for reproducibility. DO NOT CHANGE.
+    tf.set_random_seed(42)
+    np.random.seed(42)
+    
+    ########################
+    # PUT YOUR CODE HERE  #
+    ########################
+    
+    # Cifar10 stuff
+    cifar10, image_shape, num_classes = standard_cifar10_get(FLAGS)
+    
+    tf.reset_default_graph()
+    # Placeholder variables
+    x = tf.placeholder(tf.float32, shape=[None] + list(image_shape), name='x')
+    y = tf.placeholder(tf.float32, shape=(None, num_classes), name='y')
+    is_training = tf.placeholder(dtype=tf.bool, shape=(), name='isTraining')
+    
+    pool5, assign_ops, kernel = load_pretrained_VGG16_pool5(x)
+    pool5 = tf.stop_gradient(pool5)
+    print (pool5.get_shape())
+    
+    model = VGGReadOut(is_training=is_training, 
+                       dropout_rate=FLAGS.dropout_rate, 
+                       save_stuff=FLAGS.save_stuff, 
+                       fc_reg_str=FLAGS.fc_reg_str)
+                       
+    # Get logits, loss, accuracy, train optimisation step
+    logits   = model.inference(pool5, w_init=FLAGS.w_init)
+    reg_loss = sum(tf.get_collection(tf.GraphKeys.REGULARIZATION_LOSSES))
+    loss     = model.loss(logits, y) + reg_loss
+    tf.scalar_summary('loss_incl_reg', loss)
+    
+    # Function for getting feed dicts
+    def get_feed(c, train=True):
+        if train:
+            xd, yd = c.train.next_batch(FLAGS.batch_size)
+            return {x : xd, y : yd, is_training : True}
+        else:
+            xd, yd = c.test.images[:FLAGS.test_size], c.test.labels[:FLAGS.test_size]
+            return {x : xd, y : yd, is_training : False}
+    
+    from sklearn.ensemble import RandomForestClassifier
+    #%%
+    LM_MODEL_NTRAIN = 10000
+    LM_MODEL_NTEST = 10000
+    
+    chunks = 10
+    chunksize_train = int(LM_MODEL_NTRAIN * (1. / chunks))
+    chunksize_test = int(LM_MODEL_NTEST * (1. / chunks))
+    x_train = []
+    x_test  = []
+    #%%
+    with tf.Session() as sess:
+        
+        # Initialise all variables
+        tf.initialize_all_variables().run(session=sess)
+        
+        for oppy in assign_ops:
+            sess.run(oppy)
+            
+    #==============================================================================
+    #     img = cifar10.train.images[0:1]
+    #     print(img)
+    #     print(sess.run([pool5], {x : img})[0])
+    #==============================================================================
+    
+        for st in range(0, LM_MODEL_NTRAIN, chunksize_train):
+            en = st + chunksize_train
+            x_train.append(sess.run([pool5], {x : cifar10.train.images[st:en]})[0])
+            
+        for st in range(0, LM_MODEL_NTEST, chunksize_test):
+            en = st + chunksize_test
+            x_test.append(sess.run([pool5], {x : cifar10.test.images[st:en]})[0])
+        
+    #%%
+    x_train = np.vstack(x_train).reshape(LM_MODEL_NTRAIN, -1)
+    x_test = np.vstack(x_test).reshape(LM_MODEL_NTEST, -1)
+    #%%
+    y_train = cifar10.train.labels[:LM_MODEL_NTRAIN].argmax(1)
+    y_test = cifar10.test.labels[:LM_MODEL_NTEST].argmax(1)
+    #%%
+    from sklearn.neural_network import MLPClassifier
+    from sklearn.multiclass import OneVsRestClassifier
+    from sklearn.svm import SVC
+    
+    classif = OneVsRestClassifier(SVC(kernel='linear'))
+    classif.fit(x_train, y_train)
+    lm_test_predictions = classif.predict(x_test)
+    acc = np.mean(np.argmax(y_test, 1)==np.argmax(lm_test_predictions, 1))
+    print (name, 'accuracy =', np.round(acc*100, 2), '%')
+    #%%
+    #rf = RandomForestClassifier(n_estimators=100).fit(x_train, y_train)
+    rf = MLPClassifier(verbose=True, hidden_layer_sizes=(384,192,64), 
+                       tol=0.1, batch_size=128, alpha=0.1).fit(x_train, y_train)
+    preds = rf.predict(x_test)
+    print (np.mean(preds==y_test))
+    preds = rf.predict(x_train)
+    print (np.mean(preds==y_train))
+    assert 1==0
+    #%%
+    from sklearn.manifold import TSNE
+    import cPickle
+    # Get t-SNE manifold of these features
+    tsne = TSNE()
+    manifold = tsne.fit_transform(x_test)
+    
+    # Save to disk for plotting later
+    indices = np.arange(LM_MODEL_NTEST)
+    cPickle.dump((manifold, indices), open('manifold_vgg.dump', 'wb'))
+#%%
 def train():
     """
     Performs training and evaluation of your model.
@@ -72,7 +221,102 @@ def train():
     ########################
     # PUT YOUR CODE HERE  #
     ########################
-    raise NotImplementedError
+
+    # Cifar10 stuff
+    cifar10, image_shape, num_classes = standard_cifar10_get(FLAGS)
+    
+    tf.reset_default_graph()
+    # Placeholder variables
+    x = tf.placeholder(tf.float32, shape=[None] + list(image_shape), name='x')
+    print('imgshape', image_shape)
+    y = tf.placeholder(tf.float32, shape=(None, num_classes), name='y')
+    is_training = tf.placeholder(dtype=tf.bool, shape=(), name='isTraining')
+    
+    pool5, assign_ops = load_pretrained_VGG16_pool5(x)
+    pool5 = tf.stop_gradient(pool5)
+
+    model = VGGReadOut(is_training=is_training, 
+                       dropout_rate=FLAGS.dropout_rate, 
+                       save_stuff=FLAGS.save_stuff, 
+                       fc_reg_str=FLAGS.fc_reg_str)
+                       
+    # Get logits, loss, accuracy, train optimisation step
+    logits   = model.inference(pool5, w_init=FLAGS.w_init)
+    accuracy = model.accuracy(logits, y)
+    reg_loss = sum(tf.get_collection(tf.GraphKeys.REGULARIZATION_LOSSES))
+    loss     = model.loss(logits, y) + reg_loss
+    tf.scalar_summary('loss_incl_reg', loss)
+    train_op = train_step(loss)
+    
+    # Function for getting feed dicts
+    def get_feed(c, train=True):
+        if train:
+            xd, yd = c.train.next_batch(FLAGS.batch_size)
+            return {x : xd, y : yd, is_training : True}
+        else:
+            xd, yd = c.test.images[:FLAGS.test_size], c.test.labels[:FLAGS.test_size]
+            return {x : xd, y : yd, is_training : False}
+    
+    # For saving checkpoints
+    saver = tf.train.Saver()
+    
+    with tf.Session() as sess:
+        
+        # Initialise all variables
+        tf.initialize_all_variables().run(session=sess)
+        
+        for oppy in assign_ops:
+            sess.run(oppy)
+        
+        # Merge all the summaries
+        merged = tf.merge_all_summaries()
+        if FLAGS.save_stuff:
+            train_writer = tf.train.SummaryWriter(FLAGS.log_dir + '/train',
+                                                  sess.graph)
+            test_writer = tf.train.SummaryWriter(FLAGS.log_dir + '/test')
+        
+        # Start training loops
+        for epoch in range(0, FLAGS.max_steps):
+            if epoch % 100 == 0:
+
+              # Print accuracy and loss on test set
+              summary, acc, loss_val = \
+                  sess.run([merged, accuracy, loss], get_feed(cifar10, False))
+                  
+              if FLAGS.save_stuff:
+                  test_writer.add_summary(summary, epoch)
+              
+              print ('\nEpoch', epoch, 
+                     '\nTest accuracy:', acc, 
+                     '\nTest loss    :', loss_val)
+            
+            if epoch % FLAGS.checkpoint_freq == 0:
+              # Save model checkpoint
+              if epoch > 0:
+                  save_path = saver.save(sess, FLAGS.checkpoint_dir + \
+                                         '/epoch'+ str(epoch) + '.ckpt')
+                  print("Model saved in file: %s" % save_path)
+        
+            # Do training update
+            if FLAGS.save_stuff:
+                summary, _ = sess.run([merged, train_op], 
+                                      feed_dict=get_feed(cifar10, True))
+                train_writer.add_summary(summary, epoch)
+            else:
+                sess.run([train_op], feed_dict=get_feed(cifar10, True))
+        
+        # Print the final accuracy
+        summary, acc, loss_val = \
+            sess.run([merged, accuracy, loss], get_feed(cifar10, False))
+        
+        if FLAGS.save_stuff:
+            test_writer.add_summary(summary, epoch + 1)
+        print ('\nFinal test accuracy:', acc,
+               '\nFinal test loss    :', loss_val)
+               
+        save_path = saver.save(sess, FLAGS.checkpoint_dir + \
+                               '/epoch'+ str(epoch + 1) + '.ckpt')
+        print("Model saved in file: %s" % save_path)
     ########################
     # END OF YOUR CODE    #
     ########################
@@ -129,6 +373,16 @@ if __name__ == '__main__':
     parser.add_argument('--checkpoint_dir', type = str, default = CHECKPOINT_DIR_DEFAULT,
                       help='Checkpoint directory')
 
+    parser.add_argument('--save_stuff', type = bool, default = False,
+                      help='Whether to save lots of logs')
+    parser.add_argument('--fc_reg_str', type = float, default = 0.0,
+                      help='Regularisation strength on fully-connected layers')
+    parser.add_argument('--dropout_rate', type = float, default = 0.0,
+                      help='Dropout rate for FC layers')
+    parser.add_argument('--test_size', type = int, default = TEST_SIZE_DEFAULT,
+                      help='Dropout rate for FC layers')
+    parser.add_argument('--w_init', type = float, default = 1e-4,
+                      help='Uniform initialisation min and max for fc layers')
 
     FLAGS, unparsed = parser.parse_known_args()
 

@@ -21,6 +21,11 @@ def load_pretrained_VGG16_pool5(input, scope_name='vgg'):
     with tf.variable_scope(scope_name):
 
         vgg_weights, vgg_keys = load_weights(VGG_FILE)
+        
+        # Added from https://www.cs.toronto.edu/~frossard/vgg16/vgg16.py
+        with tf.name_scope('preprocess') as scope:
+            mean = tf.constant([123.68, 116.779, 103.939], dtype=tf.float32, shape=[1, 1, 1, 3], name='img_mean')
+            input = input-mean
 
         assign_ops = []
         # conv1_1
@@ -273,7 +278,7 @@ def load_pretrained_VGG16_pool5(input, scope_name='vgg'):
                                name='pool5')
         print("pool5.shape: %s" % pool5.get_shape())
 
-    return pool5, assign_ops
+    return pool5, assign_ops, kernel
 
 def load_weights(weight_file):
   weights = np.load(weight_file)

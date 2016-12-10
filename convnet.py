@@ -123,7 +123,7 @@ class ConvNet(object):
         return out
         
     def _fc_layer(self, x, n, output_shape=None, act_fn=None, 
-                      reg_strength=0., input_shape=None):
+                  reg_strength=0., input_shape=None, init='sqrt'):
         '''
         x            : tensor
         n            : name; string
@@ -148,10 +148,13 @@ class ConvNet(object):
             W_shape = [input_shape, output_shape]
             
             sd      = 1/tf.sqrt(tf.reduce_prod(tf.cast(x.get_shape()[1:],tf.float32)))
-            W_init  = tf.truncated_normal_initializer(stddev=sd, 
-                                                      dtype=tf.float32)
-            #W_init  = tf.random_uniform_initializer(minval=-1e-3, maxval=1e-3,
-            #                                        dtype=tf.float32)
+            if init == 'sqrt':
+                W_init  = tf.truncated_normal_initializer(stddev=sd, 
+                                                          dtype=tf.float32)
+            else:
+                W_init  = tf.random_uniform_initializer(minval=-init, 
+                                                        maxval=init,
+                                                        dtype=tf.float32)
             W_reg   = regularizers.l2_regularizer(reg_strength)
             W       = tf.get_variable('W', W_shape, initializer=W_init, 
                                       regularizer=W_reg)

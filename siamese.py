@@ -47,13 +47,15 @@ class Siamese(ConvNet):
             ########################
             if reuse:
                 conv_scope.reuse_variables()
+                
             self.conv1 = self._conv2d_layer(x, 'conv1',
                                             kernel_size = 5, 
                                             stride      = 1, 
                                             inp_depth   = 3,
                                             out_depth   = 64,
                                             act_fn      = tf.nn.relu)
-            self.pool1 = self._pool_layer(self.conv1, 'pool1', pool_size=3, pool_stride=2)
+            self.pool1 = self._pool_layer(self.conv1, 'pool1', 
+                                          pool_size=3, pool_stride=2)
             
             self.conv2 = self._conv2d_layer(self.pool1, 'conv2',
                                             kernel_size = 5, 
@@ -61,7 +63,8 @@ class Siamese(ConvNet):
                                             inp_depth   = 64,
                                             out_depth   = 64,
                                             act_fn      = tf.nn.relu)
-            self.pool2 = self._pool_layer(self.conv2, 'pool2', pool_size=3, pool_stride=2)
+            self.pool2 = self._pool_layer(self.conv2, 'pool2', 
+                                          pool_size=3, pool_stride=2)
             
             with tf.variable_scope('flatten'):
                 self.flatten = tf.reshape(self.pool2, [-1, 64 * 64])
@@ -75,7 +78,7 @@ class Siamese(ConvNet):
                                             reg_strength = self.fc_reg_str,
                                             output_shape = 192)
 
-            self.l2_out = self.fc2 / tf.sqrt(tf.reduce_sum(tf.square(self.fc2)))
+            self.l2_out = tf.nn.l2_normalize(self.fc2, 1)
             l2_out = self.l2_out
             ########################
             # END OF YOUR CODE    #
@@ -113,11 +116,29 @@ class Siamese(ConvNet):
         ########################
         # PUT YOUR CODE HERE  #
         ########################
-        d2 = tf.reduce_sum(tf.square(channel_1 - channel_2))
+        d2 = tf.reduce_sum(tf.square(channel_1 - channel_2), 1)
         contrast = label * d2 + (1 - label) * tf.maximum(margin - d2, 0)
         loss = tf.reduce_mean(contrast)
         ########################
         # END OF YOUR CODE    #
         ########################
 
-        return loss
+        return loss, d2
+
+    def accuracy(self, d2, labels, margin):
+        """
+        We say the labels are not equal when: (margin - d2) < 0 so we can
+        classify pairs in this manner and calculate an accuracy
+        """
+        ########################
+        # PUT YOUR CODE HERE  #
+        ########################
+        preds = 1. - tf.cast(tf.less(margin - d2, 0.), tf.float32)
+        correct_prediction = tf.equal(labels, preds)
+        accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
+        tf.scalar_summary('accuracy', accuracy)
+        ########################
+        # END OF YOUR CODE    #
+        ########################
+
+        return accuracy
