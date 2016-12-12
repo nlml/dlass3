@@ -133,7 +133,7 @@ class Siamese(ConvNet):
         ########################
         # PUT YOUR CODE HERE  #
         ########################
-        preds = 1. - tf.cast(tf.less(margin - d2, 0.), tf.float32)
+        preds = 1. - tf.cast(tf.less(margin, d2), tf.float32, name='preds')
         correct_prediction = tf.equal(labels, preds)
         accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
         tf.scalar_summary('accuracy', accuracy)

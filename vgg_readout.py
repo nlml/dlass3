@@ -12,7 +12,7 @@ class VGGReadOut(ConvNet):
     We just override the inference method from ConvNet
     '''
         
-    def inference(self, pool5, w_init=1e-6):
+    def inference(self, pool5, w_init):
         """
         Performs inference given an input tensor. This is the central portion
         of the network where we describe the computation graph. Here an input

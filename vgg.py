@@ -3,7 +3,7 @@ import numpy as np
 
 VGG_FILE = './pretrained_params/vgg16_weights.npz'
 
-def load_pretrained_VGG16_pool5(input, scope_name='vgg'):
+def load_pretrained_VGG16_pool5(input, scope_name='vgg', save_stuff=True):
     """
     Load an existing pretrained VGG-16 model.
     See https://www.cs.toronto.edu/~frossard/post/vgg16/
@@ -43,7 +43,9 @@ def load_pretrained_VGG16_pool5(input, scope_name='vgg'):
             assign_ops.append(biases.assign(vgg_B))
             out = tf.nn.bias_add(conv, biases)
             conv1_1 = tf.nn.relu(out, name=scope)
-
+            if save_stuff:
+                tf.histogram_summary(scope + '/W', kernel)
+                tf.histogram_summary(scope + '/b', biases)
 
         # conv1_2
         with tf.name_scope('conv1_2') as scope:
@@ -61,6 +63,9 @@ def load_pretrained_VGG16_pool5(input, scope_name='vgg'):
             assign_ops.append(biases.assign(vgg_B))
             out = tf.nn.bias_add(conv, biases)
             conv1_2 = tf.nn.relu(out, name=scope)
+            if save_stuff:
+                tf.histogram_summary(scope + '/W', kernel)
+                tf.histogram_summary(scope + '/b', biases)
 
         # pool1
         pool1 = tf.nn.max_pool(conv1_2,
@@ -84,6 +89,9 @@ def load_pretrained_VGG16_pool5(input, scope_name='vgg'):
             assign_ops.append(biases.assign(vgg_B))
             out = tf.nn.bias_add(conv, biases)
             conv2_1 = tf.nn.relu(out, name=scope)
+            if save_stuff:
+                tf.histogram_summary(scope + '/W', kernel)
+                tf.histogram_summary(scope + '/b', biases)
 
         # conv2_2
         with tf.name_scope('conv2_2') as scope:
@@ -100,6 +108,9 @@ def load_pretrained_VGG16_pool5(input, scope_name='vgg'):
             assign_ops.append(biases.assign(vgg_B))
             out = tf.nn.bias_add(conv, biases)
             conv2_2 = tf.nn.relu(out, name=scope)
+            if save_stuff:
+                tf.histogram_summary(scope + '/W', kernel)
+                tf.histogram_summary(scope + '/b', biases)
 
         # pool2
         pool2 = tf.nn.max_pool(conv2_2,
@@ -123,6 +134,9 @@ def load_pretrained_VGG16_pool5(input, scope_name='vgg'):
             assign_ops.append(biases.assign(vgg_B))
             out = tf.nn.bias_add(conv, biases)
             conv3_1 = tf.nn.relu(out, name=scope)
+            if save_stuff:
+                tf.histogram_summary(scope + '/W', kernel)
+                tf.histogram_summary(scope + '/b', biases)
 
         # conv3_2
         with tf.name_scope('conv3_2') as scope:
@@ -140,6 +154,9 @@ def load_pretrained_VGG16_pool5(input, scope_name='vgg'):
             assign_ops.append(biases.assign(vgg_B))
             out = tf.nn.bias_add(conv, biases)
             conv3_2 = tf.nn.relu(out, name=scope)
+            if save_stuff:
+                tf.histogram_summary(scope + '/W', kernel)
+                tf.histogram_summary(scope + '/b', biases)
 
         # conv3_3
         with tf.name_scope('conv3_3') as scope:
@@ -156,6 +173,9 @@ def load_pretrained_VGG16_pool5(input, scope_name='vgg'):
             assign_ops.append(biases.assign(vgg_B))
             out = tf.nn.bias_add(conv, biases)
             conv3_3 = tf.nn.relu(out, name=scope)
+            if save_stuff:
+                tf.histogram_summary(scope + '/W', kernel)
+                tf.histogram_summary(scope + '/b', biases)
 
         # pool3
         pool3 = tf.nn.max_pool(conv3_3,
@@ -179,6 +199,9 @@ def load_pretrained_VGG16_pool5(input, scope_name='vgg'):
             assign_ops.append(biases.assign(vgg_B))
             out = tf.nn.bias_add(conv, biases)
             conv4_1 = tf.nn.relu(out, name=scope)
+            if save_stuff:
+                tf.histogram_summary(scope + '/W', kernel)
+                tf.histogram_summary(scope + '/b', biases)
 
         # conv4_2
         with tf.name_scope('conv4_2') as scope:
@@ -195,6 +218,9 @@ def load_pretrained_VGG16_pool5(input, scope_name='vgg'):
             assign_ops.append(biases.assign(vgg_B))
             out = tf.nn.bias_add(conv, biases)
             conv4_2 = tf.nn.relu(out, name=scope)
+            if save_stuff:
+                tf.histogram_summary(scope + '/W', kernel)
+                tf.histogram_summary(scope + '/b', biases)
 
         # conv4_3
         with tf.name_scope('conv4_3') as scope:
@@ -211,6 +237,9 @@ def load_pretrained_VGG16_pool5(input, scope_name='vgg'):
             assign_ops.append(biases.assign(vgg_B))
             out = tf.nn.bias_add(conv, biases)
             conv4_3 = tf.nn.relu(out, name=scope)
+            if save_stuff:
+                tf.histogram_summary(scope + '/W', kernel)
+                tf.histogram_summary(scope + '/b', biases)
 
         # pool4
         pool4 = tf.nn.max_pool(conv4_3,
@@ -234,6 +263,9 @@ def load_pretrained_VGG16_pool5(input, scope_name='vgg'):
             assign_ops.append(biases.assign(vgg_B))
             out = tf.nn.bias_add(conv, biases)
             conv5_1 = tf.nn.relu(out, name=scope)
+            if save_stuff:
+                tf.histogram_summary(scope + '/W', kernel)
+                tf.histogram_summary(scope + '/b', biases)
 
 
         # conv5_2
@@ -251,6 +283,9 @@ def load_pretrained_VGG16_pool5(input, scope_name='vgg'):
             assign_ops.append(biases.assign(vgg_B))
             out = tf.nn.bias_add(conv, biases)
             conv5_2 = tf.nn.relu(out, name=scope)
+            if save_stuff:
+                tf.histogram_summary(scope + '/W', kernel)
+                tf.histogram_summary(scope + '/b', biases)
 
 
         # conv5_3
@@ -268,6 +303,9 @@ def load_pretrained_VGG16_pool5(input, scope_name='vgg'):
             assign_ops.append(biases.assign(vgg_B))
             out = tf.nn.bias_add(conv, biases)
             conv5_3 = tf.nn.relu(out, name=scope)
+            if save_stuff:
+                tf.histogram_summary(scope + '/W', kernel)
+                tf.histogram_summary(scope + '/b', biases)
 
 
         # pool5
@@ -278,7 +316,7 @@ def load_pretrained_VGG16_pool5(input, scope_name='vgg'):
                                name='pool5')
         print("pool5.shape: %s" % pool5.get_shape())
 
-    return pool5, assign_ops, kernel
+    return pool5, assign_ops
 
 def load_weights(weight_file):
   weights = np.load(weight_file)

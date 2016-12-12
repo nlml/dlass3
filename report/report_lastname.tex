@@ -20,6 +20,10 @@
 \usepackage{amsfonts}       % blackboard math symbols
 \usepackage{nicefrac}       % compact symbols for 1/2, etc.
 \usepackage{microtype}      % microtypography
+\usepackage{graphicx}
+\usepackage{array, tabularx}
+\usepackage{caption}
+\usepackage{subcaption}
 
 \title{Report for the Deep Learning Course Assignment 2 }
 
@@ -34,8 +38,8 @@
 % author name.
 
 \author{
-  David S.~Hippocampus \\
-  \texttt{hippo@cs.cranberry-lemon.edu}
+	Liam Schoneveld \\
+	\texttt{liam.schoneveld@student.uva.nl}
 }
 
 \begin{document}
@@ -44,11 +48,65 @@
 \maketitle
 
 \begin{abstract}
-Should contain information about the current task and the summary of the study of the CNN models on CIFAR10 dataset.
+In this assignment, we were tasked with implementing various convolutional neural network (CNN) architectures in TensorFlow (TF)...
 
 \end{abstract}
 
 \section{Task 1}
+
+
+
+\begin{figure}[h]
+	\centering
+	\begin{subfigure}{.31\textwidth}
+		\includegraphics[width=1.0\linewidth]{figures/mani_flat.png}
+		\caption{Flat}
+	\end{subfigure}%
+	\begin{subfigure}{.31\textwidth}
+		\includegraphics[width=1.0\linewidth]{figures/mani_fc1.png}
+		\caption{FC1}
+	\end{subfigure}%
+	\begin{subfigure}{.37\textwidth}
+		\includegraphics[width=1.0\linewidth]{figures/mani_fc2.png}
+		\caption{FC2}
+	\end{subfigure}
+	\caption{t-SNE manifolds obtained from extracting linear convnet features from layers Flatten/FC1/FC2}
+	\label{fig:tsnebasic}
+\end{figure}
+
+Bkah
+
+\begin{figure}
+	\centering
+	\begin{subfigure}{.33\textwidth}
+		\includegraphics[width=1.0\linewidth]{figures/accuracy_reg0e+00.png}
+	\end{subfigure}%
+	\begin{subfigure}{.33\textwidth}
+		\includegraphics[width=1.0\linewidth]{figures/accuracy_reg1e-01.png}
+	\end{subfigure}%
+	\begin{subfigure}{.33\textwidth}
+		\includegraphics[width=1.0\linewidth]{figures/accuracy_reg1e-02.png}
+	\end{subfigure}
+	\begin{subfigure}{.33\textwidth}
+		\includegraphics[width=1.0\linewidth]{figures/accuracy_reg1e-03.png}
+	\end{subfigure}%
+	\begin{subfigure}{.33\textwidth}
+		\includegraphics[width=1.0\linewidth]{figures/accuracy_reg1e-04.png}
+	\end{subfigure}%
+	\begin{subfigure}{.33\textwidth}
+		\includegraphics[width=1.0\linewidth]{figures/accuracy_bar.png}
+	\end{subfigure}
+	\caption{Accuracy on test set over time using various dropout and weight regularisation settings (last figure shows max accuracy over all epochs for each setting)}
+	\label{fig:lms}
+\end{figure}
+
+\begin{figure}[h]
+	\centering
+	\includegraphics[width=1.0\textwidth]{figures/lm_acc.png}
+	\caption{Performance of various dropout and weight regularisation settings on linear 1vsAll classifier model performance using features from flatten/FC1/FC2}
+	\label{fig:lms}
+\end{figure}
+
 
 Use feature\_extraction() in order to compute features for test samples at layer fc2. Use these features to visualize learned space by the help of t-SNE. Include the visualization in your report.
 
@@ -65,10 +123,16 @@ Can you improve test performance by using regularization techniques? Try L2 weig
 
 
 \section{Task 2}
-Should contain all needed information about Task 2 and report of all your experiments for that task.
+
+"As clear from the definition of contrastive loss, we can see that this objective is not explicitly designed for classification purpose although it is yet a discriminative one. Identify one or two applications of such loss models."
+
+SIAMESE TSNE VIS
+
+SIAMESE 1VSREST PERF
 
 \section{Task 3}
-Should contain all needed information about Task 3 and report of all your experiments for that task.
+
+
 
 \section{Conclusion}
 Should contain conclusion of this study.

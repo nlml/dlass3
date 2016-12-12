@@ -27,10 +27,12 @@ TEST_SIZE_DEFAULT = 1000
 TRAIN_SIZE_LM_DEFAULT = 1000
 SIAMESE_VALI_NTUPLES_DEFAULT = 50
 
-CHECKPOINT_PATH_TO_LOAD_FROM_DEFAULT = 'checkpoints_margin1.0_reg0.0_dropout0.0_/'
-CHECKPOINT_FILE_DEFAULT = 'epoch10000.ckpt'
+CHECKPOINT_PATH_TO_LOAD_FROM_DEFAULT = 'checkpoints_siamesenew/'
+CHECKPOINT_FILE_DEFAULT = 'epoch50000.ckpt'
 SIAMESE_MARGIN_DEFAULT = 0.1
 TRAIN_MODEL_DEFAULT = 'siamese'
+IS_TRAIN_DEFAULT = False
+SIAMESE_FRACTION_SAME_DEFAULT = 0.2
 
 #### DELETE LATER #######
 tf.reset_default_graph()
@@ -49,8 +51,11 @@ def wrap_cifar(cifar10, FLAGS):
                 self.sd = sd
                 self.images = self.dataset.images / self.sd
                 self.labels = self.dataset.labels
-            def next_batch(self, sz):
-                x, y = self.dataset.next_batch(sz)
+            def next_batch(self, sz, fraction_same=SIAMESE_FRACTION_SAME_DEFAULT):
+                if FLAGS.train_model == 'siamese':
+                    x, y = self.dataset.next_batch(sz)
+                else:
+                    x, y = self.dataset.next_batch(sz, fraction_same)
                 return x / self.sd, y
         class CIFARWrapper():
             def __init__(self, cifar10_obj):
@@ -70,7 +75,7 @@ def standard_cifar10_get(FLAGS):
     num_classes     = cifar10.test.labels.shape[1]
     return cifar10, image_shape, num_classes 
 
-def train_step(loss):
+def train_step(loss, mini=True):
     """
     Defines the ops to conduct an optimization step. You can set a learning
     rate scheduler or pick your favorite optimizer here. This set of operations
@@ -86,7 +91,10 @@ def train_step(loss):
     # PUT YOUR CODE HERE  #
     ########################
     optimizer = tf.train.AdamOptimizer(FLAGS.learning_rate)
-    train_op = optimizer.minimize(loss)
+    if mini:
+        train_op = optimizer.minimize(loss)
+    else:
+        train_op = optimizer.minimize(-loss)
     ########################
     # END OF YOUR CODE    #
     ########################
@@ -292,8 +300,10 @@ def train_siamese():
     tf.scalar_summary('loss_incl_reg', loss_w_reg)
     train_op        = train_step(loss_w_reg)
     
-    validation_tuples = create_dataset(cifar10.train, 
-                                       num_tuples=FLAGS.siamese_vali_ntuples)
+    validation_tuples = create_dataset(cifar10.test, 
+                                       num_tuples=FLAGS.siamese_vali_ntuples,
+                                       batch_size=FLAGS.batch_size,
+                                       fraction_same=FLAGS.siamese_fraction_same)
     xv1, xv2, yv = np.vstack([i[0] for i in validation_tuples]),\
                    np.vstack([i[1] for i in validation_tuples]),\
                    np.hstack([i[2] for i in validation_tuples])
@@ -301,13 +311,13 @@ def train_siamese():
     num_val_chunks = 10
     assert (FLAGS.siamese_vali_ntuples % num_val_chunks) == 0
     chunks = range(0, xv1.shape[0], int(xv1.shape[0] / num_val_chunks)) + \
-             [int(FLAGS.siamese_vali_ntuples)]
-    chunks = np.append(chunks, FLAGS.siamese_vali_ntuples)
+             [int(FLAGS.siamese_vali_ntuples * FLAGS.batch_size)]
     
     # Function for getting feed dicts
     def get_feed(c, train=True, chunk=None, chunks=None):
         if train=='train' or train=='t':
-            xd1, xd2, yd = c.train.next_batch(FLAGS.batch_size)
+            xd1, xd2, yd = \
+                c.train.next_batch(FLAGS.batch_size, FLAGS.siamese_fraction_same)
             return {x1 : xd1, x2 : xd2, y : yd, is_training : True,
                     margin : FLAGS.siamese_margin}
         elif train=='vali' or train=='v' or train=='validation':
@@ -315,7 +325,7 @@ def train_siamese():
                 return {x1 : xv1, x2 : xv2, y : yv, is_training : False, 
                         margin : FLAGS.siamese_margin}     
             else:
-                st, en = chunks[i:(i+2)]
+                st, en = chunks[chunk], chunks[chunk+1]
                 return {x1 : xv1[st:en], x2 : xv2[st:en], y : yv[st:en],
                         is_training : False, 
                         margin : FLAGS.siamese_margin} 
@@ -428,7 +438,9 @@ def feature_extraction():
                         fc_reg_str=FLAGS.fc_reg_str)
         
         # Get outputs of two siamese models, loss, train optimisation step
-        fc2   = model.inference(x)
+        l2  = model.inference(x)
+        #fc2 = model.fc2
+        fc2 = l2
     
     else:        
         # Construct linear convnet graph
@@ -465,7 +477,7 @@ def feature_extraction():
     
     # Save to disk for plotting later
     indices = np.arange(FLAGS.test_size)
-    cPickle.dump((manifold, indices), open('manifold.dump', 'wb'))
+    cPickle.dump((manifold, indices), open('manifold' + FLAGS.train_model + '.dump', 'wb'))
     
     # Get training data for feed dict
     x_data_train, y_data_train = \
@@ -558,6 +570,8 @@ if __name__ == '__main__':
                       help='Dropout rate for FC layers')
     parser.add_argument('--siamese_margin', type = float, default = SIAMESE_MARGIN_DEFAULT,
                       help='Margin for siamese contrastive loss')
+    parser.add_argument('--siamese_fraction_same', type = float, default = SIAMESE_FRACTION_SAME_DEFAULT,
+                      help='Siamese sampling fraction_same')
     parser.add_argument('--ckpt_path', type = str, default = CHECKPOINT_PATH_TO_LOAD_FROM_DEFAULT,
                       help='Checkpoint path to load from (end with /)')
     parser.add_argument('--ckpt_file', type = str, default = CHECKPOINT_FILE_DEFAULT,
@@ -568,7 +582,7 @@ if __name__ == '__main__':
                       help='Dropout rate for FC layers')
     parser.add_argument('--siamese_vali_ntuples', type = int, default = SIAMESE_VALI_NTUPLES_DEFAULT,
                       help='Dropout rate for FC layers')
-    parser.add_argument('--is_train', type = bool, default = True,
+    parser.add_argument('--is_train', type = bool, default = IS_TRAIN_DEFAULT,
                       help='Training or feature extraction')
     parser.add_argument('--save_stuff', type = bool, default = False,
                       help='Whether to save lots of logs')

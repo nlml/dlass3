@@ -152,6 +152,7 @@ class ConvNet(object):
                 W_init  = tf.truncated_normal_initializer(stddev=sd, 
                                                           dtype=tf.float32)
             else:
+                init = float(init)
                 W_init  = tf.random_uniform_initializer(minval=-init, 
                                                         maxval=init,
                                                         dtype=tf.float32)
